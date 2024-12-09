@@ -50,3 +50,17 @@ run: build ## run a single example that's of interest
 .PHONY: debug
 debug: build ## run a single example of interest with debug stuff
 	exec bin/vera tests/intro.vera --ftrace
+
+.PHONY: tests
+tests: build ## run and report on all tests
+	@tests/run vera intro
+	@tests/run vera salad
+	@tests/run vera test1
+	@tests/run vera test2
+
+.PHONY: testoriginal
+testoriginal: buildoriginal ## run and report on all tests for original.c
+	@tests/run original intro
+	@tests/run original salad
+	@tests/run original test1
+	@tests/run original test2

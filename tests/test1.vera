@@ -1,0 +1,26 @@
+|------------|
+|--| Nova |--|
+|------------|
+
+Nova is a lightweight language for conversing with computers.
+It's flexible, makes no assumptions, and allows for exploration and good conversation.
+Nova lets you write what you mean.
+
+|an axe, a tree|
+    a log
+
+|the button was pressed, the door is closed|
+    the door is open
+
+|the button was pressed, the door is open|
+    the door is closed
+
+|todo list|
+    wash dishes,
+    sweep floors,
+    get groceries,
+    feed pets
+
+|| an axe, a tree,
+   the button was pressed, the door is closed,
+   todo list

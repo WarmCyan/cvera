@@ -1,0 +1,13 @@
+|| The first character in a file assigns a spacer glyph.
+|| A program is made of rules and facts.
+
+|| Two spacers indicate the creation of facts
+|| Facts are separated by commas, a matchbox, a log, paper
+
+| A rule has a left side | And a right side.
+| Facts on the left side | are replaced by facts in the right side
+
+| a flame, a log | a warm fire
+| a matchbox | a match, a match a box
+| a match, paper | a flame
+

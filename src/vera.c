@@ -14,8 +14,8 @@ WITH REGARD TO THIS SOFTWARE.
 
 #define SRC_SZ 0x8000 /* maximum size of input vera source code */
 #define DIC_SZ 0x8000 /* TODO: ? */
-#define SYM_SZ 0x101  /* TODO: ? */
-#define RUL_SZ 0x80   /* TODO: ? */
+#define SYM_SZ 0x100  /* maximum length of a symbol */
+#define RUL_SZ 0x80   /* maximum number of rules we can handle */
 
 static char spacer_glpyh, src[SRC_SZ];
 static char dict[DIC_SZ], *_dict = dict;
@@ -72,7 +72,8 @@ find_symbol(char *s) {
 
 /* Iterate forward until we hit the end of this symbol, which should be
  * delineated either by a comma, or by a spacer glyph (indicating the next rule
- * or fact.) */
+ * or fact.) Also I think the
+ * reference to the symbol is put into id romehow? */
 static char *
 walk_symbol(char *s, int *id) {
 	s = walk_whitespace(s);

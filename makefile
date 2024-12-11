@@ -44,7 +44,7 @@ clean: ## remove everything in the bin folder, start fresh!
 
 .PHONY: run
 run: build ## run a single example that's of interest
-	exec bin/vera tests/intro.vera
+	exec bin/vera tests/salad.vera
 
 
 .PHONY: debug

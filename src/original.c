@@ -193,7 +193,7 @@ eval(void)
 				if(rules[r][SYM_SZ + i])
 					acc[i] += 1;
 			}
-			printf("%02d ", r), prinths(acc);
+			printf("%02d \n", r), prinths(acc);
 			r = 0, steps++;
 		} else
 			r++;

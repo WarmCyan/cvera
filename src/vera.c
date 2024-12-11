@@ -18,6 +18,12 @@ WITH REGARD TO THIS SOFTWARE.
 #define RUL_SZ 0x80   /* maximum number of rules we can handle */
 
 static char spacer_glpyh, src[SRC_SZ];
+/* ahhh the secondary pointer definitions are because arrays aren't technically
+ * pointers, at least wrt to incrementing, see https://stackoverflow.com/questions/4607128/in-c-are-arrays-pointers-or-used-as-pointers
+ * (incrementing a pointer moves by 4 bytes, I assume incrementing an array does
+ * not? or maybe you just want a pointer separate from the array to be able to
+ * iterate/index into it without losing the pointer to the beginning of the
+ * array? */
 static char dict[DIC_SZ], *_dict = dict;
 static char *syms[SYM_SZ], **_syms = syms;
 static int acc[SYM_SZ], rules[RUL_SZ][SYM_SZ * 2], _rules = 0;
@@ -33,6 +39,8 @@ walk_whitespace(char *s) {
 	return s;
 }
 
+/* ...go to the end of src? */
+/* hmmm no this is just finding the next null term? */
 static char *
 scap(char *s) {
 	while(*s) s++;
@@ -44,13 +52,14 @@ trim(char **s) {
 	char *cap = scap(*s) - 1;
 	while(*cap) {
 		if(*cap > 0x20) break;
-		*cap = 0;
+		*cap = 0; /* add null terminators at the end of the symbol until we find a ? */
 		cap--;
 	}
 }
 
+/* check if the two passed symbols are the same */
 static int
-scmp(char *a, char *b) {
+symbol_compare(char *a, char *b) {
 	while(*a && *b) {
 		if(*a == ',' && !*b) break;
 		if(*a != *b) break;
@@ -58,14 +67,19 @@ scmp(char *a, char *b) {
 		if(*b == ' ') b = walk_whitespace(b);
 		a++, b++;
 	}
+    /* two symbols are the same if we've made it this far and a is indeed at the
+     * end of a symbol? (comma, spacer, or whitespace) */
+    /* OH. I guess we're negating *b because if we iterated to the end of it,
+     * it's gonna be a null term? so !*b should be non-null (thus true) and a
+     * should be the end of a symbol in some way */
 	return !*b && (*a == ',' || *a == spacer_glpyh || *a <= 0x20);
 }
 
 static int
-find_symbol(char *s) {
+find_symbol_index(char *s) {
 	int i, len = _syms - &syms[0];
 	for(i = 0; i < len; i++)
-		if(scmp(s, syms[i]))
+		if(symbol_compare(s, syms[i]))
 			return i;
 	return -1;
 }
@@ -77,8 +91,10 @@ find_symbol(char *s) {
 static char *
 walk_symbol(char *s, int *id) {
 	s = walk_whitespace(s);
-	*id = find_symbol(s);
+	*id = find_symbol_index(s);
 	if(*id > -1) {
+        /* We hit this code if this is a symbol we've encountered before? */
+
         /* TODO: why are we explicitly checking for 0xa? That's a line feed
          * character? Does a newline always indicate a new symbol? Do we not
          * then need to also check for carriage return? Does `trim` take care
@@ -212,7 +228,7 @@ eval(void) {
 				if(rules[r][SYM_SZ + i])
 					acc[i] += 1;
 			}
-			printf("%02d ", r), prinths(acc);
+			printf("%02d \n", r), prinths(acc);
 			r = 0, steps++;
 		} else
 			r++;

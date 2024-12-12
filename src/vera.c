@@ -17,7 +17,7 @@ WITH REGARD TO THIS SOFTWARE.
 #define SYM_SZ 0x100  /* maximum length of a symbol */
 #define RUL_SZ 0x80   /* maximum number of rules we can handle */
 
-static char spacer_glpyh, src[SRC_SZ];
+static char spacer_glyph, src[SRC_SZ];
 /* ahhh the secondary pointer definitions are because arrays aren't technically
  * pointers, at least wrt to incrementing, see https://stackoverflow.com/questions/4607128/in-c-are-arrays-pointers-or-used-as-pointers
  * (incrementing a pointer moves by 4 bytes, I assume incrementing an array does
@@ -72,7 +72,7 @@ symbol_compare(char *a, char *b) {
     /* OH. I guess we're negating *b because if we iterated to the end of it,
      * it's gonna be a null term? so !*b should be non-null (thus true) and a
      * should be the end of a symbol in some way */
-	return !*b && (*a == ',' || *a == spacer_glpyh || *a <= 0x20);
+	return !*b && (*a == ',' || *a == spacer_glyph || *a <= 0x20);
 }
 
 static int
@@ -105,12 +105,12 @@ walk_symbol(char *s, int *id) {
          * that should be delineating symbols. */
         /* This did indeed seem to be why tests 1 and 2 were failing. But, now
          * the original tests definitely don't line up :( */
-		while(s && s[0] != spacer_glpyh && s[0] != ',' /*&& s[0] != 0xa*/ && s[0] != spacer_glpyh)
+		while(s && s[0] != spacer_glyph && s[0] != ',' /*&& s[0] != 0xa*/ && s[0] != spacer_glyph)
 			*s++;
 		return s;
 	}
 	*_syms = _dict;
-	while(s[0] && s[0] != spacer_glpyh && s[0] != ',' /*&& s[0] != 0xa*/ && s[0] != spacer_glpyh) {
+	while(s[0] && s[0] != spacer_glyph && s[0] != ',' /*&& s[0] != 0xa*/ && s[0] != spacer_glyph) {
 		*_dict++ = *s++;
 		if(*s == ' ')
 			s = walk_whitespace(s), *_dict++ = ' ';
@@ -137,11 +137,11 @@ walk_rule(char *s) {
 	/* right-hand side, the rule results. */
     /* we should be at a spacer glyph, indicating the end of condition/start of
      * results */
-	if(s[0] != spacer_glpyh)
+	if(s[0] != spacer_glyph)
 		printf("Broken rule?!\n");
 	s++;
 	s = walk_whitespace(s);
-	valid = s[0] != spacer_glpyh;
+	valid = s[0] != spacer_glyph;
 	while(valid) {
 		s = walk_symbol(s, &id);
 		rules[_rules][id + SYM_SZ]++;
@@ -173,14 +173,14 @@ parse(char *s) {
      * conventionally '|', but can be anything.
      * (spacer glyph is the terminology used in
      * https://wiki.xxiivv.com/site/vera.html) */
-	spacer_glpyh = s[0];
+	spacer_glyph = s[0];
 	s = walk_whitespace(s);
 	while(s[0]) {
 		s = walk_whitespace(s);
-		if(s[0] == spacer_glpyh) {
+		if(s[0] == spacer_glyph) {
             /* if we find another spacer glyph immediately after, we know
              * it's a fact, e.g. `|| this is a fact` */
-			if(s[1] == spacer_glpyh)
+			if(s[1] == spacer_glyph)
 				s = walk_fact(s + 2);
             /* instead of a rule which starts with a single spacer glyph
              * e.g. `|this is a condition| this is the result` */

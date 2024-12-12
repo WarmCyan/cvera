@@ -14,7 +14,7 @@ WITH REGARD TO THIS SOFTWARE.
 
 #define SRC_SZ 0x8000 /* maximum size of input vera source code */
 #define DIC_SZ 0x8000 /* TODO: ? */
-#define SYM_SZ 0x100  /* maximum length of a symbol */
+#define SYM_SZ 0x100  /* maximum length of a symbol...or is it the maximum number of unique symbols? */
 #define RUL_SZ 0x80   /* maximum number of rules we can handle */
 
 static char spacer_glyph, src[SRC_SZ];
@@ -167,6 +167,28 @@ walk_fact(char *s) {
 	return s;
 }
 
+
+static void
+print_all_symbols() {
+    printf("-------\n");
+    int i;
+    for (i = 0; i < SYM_SZ; i++) {
+        if (syms[i]) {
+            printf("SYM %d:%s\n", i, syms[i]);
+        }
+    }
+}
+
+print_all_rules() {
+    printf("-------\n");
+    int i;
+    for (i = 0; i < RUL_SZ; i++) {
+        if (rules[i]) {
+            printf("RUL %d:%s\n", i, rules[i]);
+        }
+    }
+}
+
 static int
 parse(char *s) {
     /* the spacer glyph is the first character in the source.
@@ -180,12 +202,14 @@ parse(char *s) {
 		if(s[0] == spacer_glyph) {
             /* if we find another spacer glyph immediately after, we know
              * it's a fact, e.g. `|| this is a fact` */
-			if(s[1] == spacer_glyph)
+			if(s[1] == spacer_glyph) {
 				s = walk_fact(s + 2);
             /* instead of a rule which starts with a single spacer glyph
              * e.g. `|this is a condition| this is the result` */
-			else
+            } else
 				s = walk_rule(s + 1);
+            print_all_symbols();
+            print_all_rules();
 		} else if(s[0]) {
 			printf("Unexpected ending: [%c]%s\n", s[0], s);
 			return 0;
@@ -194,6 +218,11 @@ parse(char *s) {
 	return 1;
 }
 
+
+
+
+/* print a symbol and handle showing its multiplicity (apple^5 if there are 5
+ * apple facts) */
 static void
 prinths(int *hs) {
 	int i;

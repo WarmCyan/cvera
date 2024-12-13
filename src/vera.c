@@ -17,6 +17,7 @@ WITH REGARD TO THIS SOFTWARE.
 #define SYM_SZ 0x100  /* maximum length of a symbol...or is it the maximum number of unique symbols? */
 #define RUL_SZ 0x80   /* maximum number of rules we can handle */
 
+/* src is the full input source code */
 static char spacer_glyph, src[SRC_SZ];
 /* ahhh the secondary pointer definitions are because arrays aren't technically
  * pointers, at least wrt to incrementing, see https://stackoverflow.com/questions/4607128/in-c-are-arrays-pointers-or-used-as-pointers
@@ -26,6 +27,10 @@ static char spacer_glyph, src[SRC_SZ];
  * array? */
 static char dict[DIC_SZ], *_dict = dict;
 static char *syms[SYM_SZ], **_syms = syms;
+/* acc is the current bag of facts, stands for accumulator, is the current count
+ * of each symbol */
+/* presumably each rule has a count of each symbol in lhs vs rhs (the *2 part?)
+ */
 static int acc[SYM_SZ], rules[RUL_SZ][SYM_SZ * 2], _rules = 0;
 
 /* iterate through source until we find a non-whitespace character */
@@ -34,8 +39,10 @@ walk_whitespace(char *s) {
     /* TODO: I added this s - src < SRC_SZ, because without I kept getting
      * segfaults after removing the check for line feed in walk_symbol, but now
      * we're getting different registers at the end than original.c */
-	while(s[0] && s[0] <= 0x20 && s - src < SRC_SZ)
+	while(s[0] && s[0] <= 0x20 && s - src < SRC_SZ) {
+        printf("'%c`", s[0]);
 		s++;
+    }
 	return s;
 }
 
@@ -60,11 +67,24 @@ trim(char **s) {
 /* check if the two passed symbols are the same */
 static int
 symbol_compare(char *a, char *b) {
+    printf("\tcompare:");
 	while(*a && *b) {
-		if(*a == ',' && !*b) break;
+        printf("%c:%c ", *a, *b);
+		if((*a == ',' || *a == spacer_glyph) && !*b) break;
 		if(*a != *b) break;
-		if(*a == ' ') a = walk_whitespace(a);
+        /* ...for whatever reason, walking spaces on a always seems to go one
+         * character too far?! and subtracting 1 fixes it, but I don't
+         * understand, when printing the characters being skipped, that first
+         * letter in new word doesn't show up... * don't understand, when
+         * printing the characters being skipped, that first letter in new word
+         * doesn't show up... */
+		if(*a == ' ') a = walk_whitespace(a) - 1;
 		if(*b == ' ') b = walk_whitespace(b);
+        /* I think a potential problem is a/b aren't trimmed, so newlines in
+         * the middle of symbols might break? so we fix by walking whitespace on
+         * < 0x20 here (as long as not null term?) */
+        /*if (*a <= 0x20 && *a > 0x0) a = walk_whitespace(a);
+        if (*b <= 0x20 && *b > 0x0) b = walk_whitespace(b);*/
 		a++, b++;
 	}
     /* two symbols are the same if we've made it this far and a is indeed at the
@@ -72,15 +92,20 @@ symbol_compare(char *a, char *b) {
     /* OH. I guess we're negating *b because if we iterated to the end of it,
      * it's gonna be a null term? so !*b should be non-null (thus true) and a
      * should be the end of a symbol in some way */
+    printf("\n");
 	return !*b && (*a == ',' || *a == spacer_glyph || *a <= 0x20);
 }
 
 static int
 find_symbol_index(char *s) {
 	int i, len = _syms - &syms[0];
-	for(i = 0; i < len; i++)
-		if(symbol_compare(s, syms[i]))
+	for(i = 0; i < len; i++) {
+		if(symbol_compare(s, syms[i])) {
+            printf("\tfound!\n");
 			return i;
+        }
+    }
+    printf("\tnew!\n");
 	return -1;
 }
 
@@ -181,10 +206,38 @@ print_all_symbols() {
 
 print_all_rules() {
     printf("-------\n");
-    int i;
+    int i, j;
     for (i = 0; i < RUL_SZ; i++) {
-        if (rules[i]) {
-            printf("RUL %d:%s\n", i, rules[i]);
+        int sum = 0;
+        /* determine if this rule "exists"/isn't blank if any of the associated symbol
+s are > 0 */
+        for (j = 0; j < SYM_SZ*2; j++) {
+            sum += rules[i][j];
+        }
+        if (sum > 0) {
+            printf("RUL %d:|", i);
+            for (j = 0; j < SYM_SZ; j++) {
+                /* handle printing symbol and multiplicity if part of the rule
+                 * lhs */
+                if (rules[i][j] == 1) {
+                    printf("%s,", syms[j]);
+                } else if (rules[i][j] > 1) {
+                    printf("%s^%d,", syms[j], rules[i][j]);
+                }
+            }
+            printf("|");
+            int rel_j;
+            for (j = SYM_SZ; j < SYM_SZ*2; j++) {
+                /* handle printing symbol and multiplicity if part of the rule
+                 * rhs */
+                rel_j = j - SYM_SZ;
+                if (rules[i][j] == 1) {
+                    printf("%s,", syms[rel_j]);
+                } else if (rules[i][j] > 1) {
+                    printf("%s^%d,", syms[rel_j], rules[i][j]);
+                }
+            }
+            printf("\n");
         }
     }
 }

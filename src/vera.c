@@ -39,10 +39,13 @@ walk_whitespace(char *s) {
     /* TODO: I added this s - src < SRC_SZ, because without I kept getting
      * segfaults after removing the check for line feed in walk_symbol, but now
      * we're getting different registers at the end than original.c */
-	while(s[0] && s[0] <= 0x20 && s - src < SRC_SZ) {
+    printf("(");
+	while(s[0] && s[0] <= 0x20 /* && s - &src[0] < SRC_SZ*/) {
         printf("'%c`", s[0]);
 		s++;
     }
+    printf(")");
+    printf("[%02x]", s[0]);
 	return s;
 }
 
@@ -79,7 +82,7 @@ symbol_compare(char *a, char *b) {
          * printing the characters being skipped, that first letter in new word
          * doesn't show up... */
 		if(*a == ' ') a = walk_whitespace(a) - 1;
-		if(*b == ' ') b = walk_whitespace(b);
+		if(*b == ' ') b = walk_whitespace(b) - 1;
         /* I think a potential problem is a/b aren't trimmed, so newlines in
          * the middle of symbols might break? so we fix by walking whitespace on
          * < 0x20 here (as long as not null term?) */
@@ -130,8 +133,10 @@ walk_symbol(char *s, int *id) {
          * that should be delineating symbols. */
         /* This did indeed seem to be why tests 1 and 2 were failing. But, now
          * the original tests definitely don't line up :( */
-		while(s && s[0] != spacer_glyph && s[0] != ',' /*&& s[0] != 0xa*/ && s[0] != spacer_glyph)
+		while(s[0] && s[0] != spacer_glyph && s[0] != ',' && s - src < SRC_SZ /*&& s[0] != 0xa*/ ) {
+            printf("\tseeking symbol end\n");
 			*s++;
+        }
 		return s;
 	}
 	*_syms = _dict;
@@ -149,6 +154,7 @@ walk_symbol(char *s, int *id) {
  * whitespace */
 static char *
 walk_rule(char *s) {
+    printf("Walking rule...\n");
 	int id, valid = 1;
 	/* left-hand side, the rule condition. */
 	while(valid) {
@@ -181,6 +187,7 @@ walk_rule(char *s) {
 
 static char *
 walk_fact(char *s) {
+    printf("Walking fact\n");
 	int id, valid = 1;
 	while(valid) {
 		s = walk_symbol(s, &id), acc[id]++;
@@ -301,7 +308,7 @@ match(int *a, int *b) {
 static void
 eval(void) {
 	int i, r = 0, steps = 0;
-	printf("AC "), prinths(acc);
+	printf("AC \n"), prinths(acc);
 	while(r < _rules) {
 		if(match(acc, rules[r])) {
 			for(i = 0; i < SYM_SZ; i++) {

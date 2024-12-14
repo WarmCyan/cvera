@@ -1,6 +1,6 @@
 /* ====================================================================
-Original Copyright (c) 2024 Devine Lu Linvega
-Modified Copyright (c) 2024 Nathan Martindale
+Copyright (c) 2024 Devine Lu Linvega
+Copyright (c) 2024 Nathan Martindale
 
 Permission to use, copy, modify, and distribute this software for any
 purpose with or without fee is hereby granted, provided that the above
@@ -10,24 +10,44 @@ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
 WITH REGARD TO THIS SOFTWARE.
 ==================================================================== */
 
-struct sym_table {
+/* ----------------------------------------------
+Table relating internal symbols as pointers to where their string names are,
+so if source is "apple, some fruit":
+
+names = ['a', 'p', 'p', 'l', 'e', 0x0, 's', 'o', 'm', 'e', ' ', 'f', 'r', 'u', 'i', 't', 0x0]
+table = [(pointer to names[0]), (pointer to names[6])]
+---------------------------------------------- */
+struct SymTable {
     /* pointer to an array of all unique symbol names separated by null terms */
     char* names; 
     /* pointer to an array of pointers, the latter of which is each into the sym
      * names array. */
     char** table;
+    int len; /* current number/position of syms in table */
     int max_len; /* bounds for the syms table */
-    int len; /* current number of syms in table */
     /* the last stop within the names string array, start next new symbol here. */
     int names_len;
     /* int max_names_len */
 };
 
+/* ----------------------------------------------
+Table where each row has counts of symbols on LHS and counts of symbols on RHS of a rule,
+so if source was: (given symbol table example above)
+
+|apple, apple| some fruit
+|| apple, apple
+
+table = [[2, 0, 0, 1], [0, 0, 2, 0]]
+          ^LHS  ^RHS    ^LHS  ^RHS
+---------------------------------------------- */
+struct RuleTable {
+    SymTable* syms;
+    int* table;
+    int len; /* current number/position of rules in table */
+    int max_len; /* bounds for the rules table */
+}
+
 static char delim; /* the spacer glyph delimiter, conventionally '|' */
-/* static char symbol_strings[]; */
-/* static char symbol_strings_len */
-/*  */
-/* static int syms_table_len = 0;  how many symbols are in the symbols table */ */
 
 /* iterate the pointer until we find the first non-whitespace character */ 
 static char* walk_whitespace(char* s) {
@@ -37,7 +57,7 @@ static char* walk_whitespace(char* s) {
 }
 
 /* turn all whitespace characters at end of string to null terms */
-static void trim(char** s) {
+typedef static void trim(char** s) {
     /* find the first null terminator so we can work backwards. */
     char* end = *s;
     while (*end) end++;
@@ -53,7 +73,7 @@ static void trim(char** s) {
 /* check if two passed symbols are the same */
 /* I think the original assumption is that a is always the source code? hence
  * the assymetry originally */
-static int compare_symbols(char* a, char* b) {
+typedef static int compare_symbols(char* a, char* b) {
     while (*a && *b) {
         /* stop when we've reached the end of one of the symbols */
         if (*a == ',' || *a == delim || *b == ',' || *b == delim) break;
@@ -78,7 +98,7 @@ static int compare_symbols(char* a, char* b) {
 }
 
 /* find ID of symbol in a symbols table */
-static int index_of_symbol(char* s, sym_table* syms) {
+static int index_of_symbol(char* s, SymTable* syms) {
     int i = 0;
     for (i = 0; i < *syms.len; i++) {
         if (compare_symbols(s, *syms.table[i])) {
@@ -90,9 +110,9 @@ static int index_of_symbol(char* s, sym_table* syms) {
 
 /* walk to the end of the next symbol, adding it to the symbol table if it
  * hasn't been seen before. (and store the index to that symbol) */ 
-static char* walk_symbol(char* s, int* id, sym_table* syms) {
+static char* walk_symbol(char* s, int* id, SymTable* syms) {
     s = walk_whitespace(s);
-    *id = index_of_symbol(s, sym_table, sym_table_len);
+    *id = index_of_symbol(s, syms);
     if (*id > -1) {
         /* we've seen this symbol before, so just walk to the end of it 
          * (when we see a delimiter or end of fact syntax) */
@@ -121,4 +141,86 @@ static char* walk_symbol(char* s, int* id, sym_table* syms) {
     trim(*syms.table[*syms.len - 1]);
     *id = *syms.len - 1;
     return s;
+}
+
+static char* walk_rule(char* s, RuleTable* rules) {
+    int sym_id; /* used to track symbol count */
+    int still_parsing_side = 1;
+    /* process left-hand side, the rule condition. */
+    while(still_parsing_side) {
+        s = walk_symbol(s, &sym_id, *rules.syms);
+        *rules.table[*rules.len][sym_id]++;
+        if (s[0] == ',') 
+            s++;
+        else 
+            still_parsing_side = 0;
+    }
+    /* process right-hand side, the rule results. */
+    /* we should be at a delimiter, indicating end of condition/start of results */
+    if (s[0] != delim)
+        printf("Broken rule?!\n"); /* TODO: figure out better way to do error reporting */
+    s++;
+    s = walk_whitespace(s);
+    still_parsing_side = s[0] != delim;
+    while (still_parsing_side) {
+        s = walk_symbol(s, &sym_id, *rules.syms);
+        *rules.table[*rules.len][sym_id + *rules.syms.max_len]++;
+        if (s[0] == ',')
+            s++;
+        else
+            still_parsing_side = 0;
+    }
+    *rules.len++;
+    return walk_whitespace(s);
+}
+
+
+/* STRT: maybe to get closer to what wryl said about typing being
+ * <List<Pair<List<Symbol>, List<Symbol>>> (the implication being that facts are
+ * just rules with blank lhs), should parse facts and rules simultaneously, both
+ * into the rules table? The data struct is already set up for this to work,
+ * just make facts not impact an acc, and instead do a separate loop through the
+ * rules table to find empty rule lhs and increment acc there. */
+
+
+static char* walk_fact(char* s, RuleTable* rules) {
+    int sym_id;
+    int still_parsing = 1;
+    while (still_parsing) {
+        s = walk_symbol(s, &sym_id);
+        *rules.table[*rules.len][sym_id + *rules.syms.max_len]++;
+        if (s[0] == ',')
+            s++;
+        else
+            still_parsing = 0;
+    }
+    *rules.len++;
+    return s;
+}
+
+static int parse(char* s, RuleTable* rules) {
+    /* the rule delimiter is the first character in the source.
+     * conventionally '|', but can be anything.
+     * (spacer glyph is the terminology used in
+     * https://wiki.xxiivv.com/site/vera.html) */
+    delim = s[0];
+    s = walk_whitespace(s);
+    while (s) {
+        s = walk_whitespace(s);
+        if (s[0] == delim) {
+            if (s[1] == delim) {
+                /* if we find another delimiter immediately after, we know it's a
+                 * fact, e.g. `|| this is a fact` */
+                s = walk_fact(s + 2, rules);
+            } else {
+                /* instead of a rule which starts with a single delimiter, e.g.
+                 * `|this is a condition| this is the result` */
+                s = walk_rule(s + 1, rules);
+            }
+        } else if (s) {
+            printf("Unexpected ending: [%c]%s]\n", s[0], s);
+            return 0;
+        }
+    }
+    return 1;
 }

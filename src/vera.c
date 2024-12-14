@@ -140,6 +140,7 @@ walk_symbol(char *s, int *id) {
 		return s;
 	}
 	*_syms = _dict;
+    /* TODO: do I need a src_sz check here? */
 	while(s[0] && s[0] != spacer_glyph && s[0] != ',' /*&& s[0] != 0xa*/ && s[0] != spacer_glyph) {
 		*_dict++ = *s++;
 		if(*s == ' ')

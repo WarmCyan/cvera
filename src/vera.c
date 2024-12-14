@@ -39,9 +39,12 @@ static int acc[SYM_SZ], rules[RUL_SZ][SYM_SZ * 2], _rules = 0;
 /* iterate through source until we find a non-whitespace character */
 static char *
 walk_whitespace(char *s) {
-    /* TODO: I added this s - src < SRC_SZ, because without I kept getting
+    /* I added this s - src < SRC_SZ, because without I kept getting
      * segfaults after removing the check for line feed in walk_symbol, but now
      * we're getting different registers at the end than original.c */
+    /* Ah, so no, this isn't the correct place to add that: s could be a
+     * pointer into dict, which is after src, so this check would always
+     * immediately return. I instead put it down in walk_symbol. */
     printf("(");
     while(s[0] && s[0] <= 0x20 /* && s - &src[0] < SRC_SZ*/) {
         printf("'%c`", s[0]);
@@ -86,11 +89,17 @@ symbol_compare(char *a, char *b) {
          * letter in new word doesn't show up... * don't understand, when
          * printing the characters being skipped, that first letter in new word
          * doesn't show up... */
+        /* NOPE, this was also an issue with me putting the out of bounds check
+         * in walk_whitespace instead of walk_symbol. So both a/b should be
+         * decremented by 1 since the end of this block increments both
+         * (otherwise you skip checking the first character after each space) */
         if(*a == ' ') a = walk_whitespace(a) - 1;
         if(*b == ' ') b = walk_whitespace(b) - 1;
         /* I think a potential problem is a/b aren't trimmed, so newlines in
          * the middle of symbols might break? so we fix by walking whitespace on
          * < 0x20 here (as long as not null term?) */
+        /* ...this doesn't actually appear to be the case? Not 100% sure why,
+         * maybe I just didn't construct a sufficient test for this */
         /*if (*a <= 0x20 && *a > 0x0) a = walk_whitespace(a);
           if (*b <= 0x20 && *b > 0x0) b = walk_whitespace(b);*/
         a++, b++;
@@ -150,6 +159,9 @@ walk_symbol(char *s, int *id) {
          * that should be delineating symbols. */
         /* This did indeed seem to be why tests 1 and 2 were failing. But, now
          * the original tests definitely don't line up :( */
+        /* So THIS is where it makes sense to have an out of bounds check, this
+         * is only running on src directly, and we seg fault (I think) if we go
+         * too far */
         while(s[0] && s[0] != spacer_glyph && s[0] != ',' && s - src < SRC_SZ /*&& s[0] != 0xa*/ ) {
             printf("\tseeking symbol end\n");
             *s++;
@@ -157,7 +169,7 @@ walk_symbol(char *s, int *id) {
         return s;
     }
     *_syms = _dict;
-    /* TODO: do I need a src_sz check here? */
+    /* TODO: do I need a src_sz check here too? */
     while(s[0] && s[0] != spacer_glyph && s[0] != ',' /*&& s[0] != 0xa*/ && s[0] != spacer_glyph) {
         *_dict++ = *s++;
         if(*s == ' ')

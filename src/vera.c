@@ -27,7 +27,7 @@ static char spacer_glyph, src[SRC_SZ];
  * array? */
 /* TODO: I'm still not actually sure what dict is */
 static char dict[DIC_SZ], *_dict = dict;
-/* So....dict is an array of all symbol names separated by null terms, and each
+/* So....dict is an array of all unique symbol names separated by null terms, and each
  * entry in syms then is a reference into a point within that dict? */
 static char *syms[SYM_SZ], **_syms = syms;
 /* acc is the current bag of facts, stands for accumulator, is the current count
@@ -317,8 +317,15 @@ prinths(int *hs) {
 
 static int
 match(int *a, int *b) {
+    /* Note that a is the current accumulator, and b is the rule. */
     int i;
+    /* Since we're only iterating up to SYM_SZ, we're only checking the left
+     * hand side */
     for(i = 0; i < SYM_SZ; i++) {
+        /* if symbol i is > 0 in the rule LHS and 0 in the RHS, this is NOT a
+         * match. */
+        /* TODO: if we kept counter of max symbols found, could stop iteration
+         * early */
         if(b[i] && !a[i])
             return 0;
     }
@@ -332,13 +339,13 @@ eval(void) {
     while(r < _rules) {
         if(match(acc, rules[r])) {
             for(i = 0; i < SYM_SZ; i++) {
-                if(rules[r][i])
+                if(rules[r][i]) /* remove LHS facts from acc */
                     acc[i] -= 1;
-                if(rules[r][SYM_SZ + i])
+                if(rules[r][SYM_SZ + i]) /* add RHS facts to acc */
                     acc[i] += 1;
             }
             printf("%02d \n", r), prinths(acc);
-            r = 0, steps++;
+            r = 0, steps++; /* when we find a rule, we go back to the beginning (top of the deck) */
         } else
             r++;
     }

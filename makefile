@@ -44,7 +44,11 @@ clean: ## remove everything in the bin folder, start fresh!
 
 .PHONY: run
 run: build ## run a single example that's of interest
-	exec bin/vera tests/test2.vera
+	exec bin/vera tests/test4.vera
+
+.PHONY: runoriginal
+runoriginal: buildoriginal ## run a single example that's of interest
+	exec bin/original tests/test1.vera
 
 
 .PHONY: debug
@@ -58,6 +62,7 @@ tests: build ## run and report on all tests
 	@tests/run vera test1
 	@tests/run vera test2
 	@tests/run vera test3
+	@tests/run vera test4
 
 .PHONY: testoriginal
 testoriginal: buildoriginal ## run and report on all tests for original.c

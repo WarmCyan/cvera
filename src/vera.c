@@ -162,15 +162,14 @@ walk_symbol(char *s, int *id) {
         /* So THIS is where it makes sense to have an out of bounds check, this
          * is only running on src directly, and we seg fault (I think) if we go
          * too far */
-        while(s[0] && s[0] != spacer_glyph && s[0] != ',' && s - src < SRC_SZ /*&& s[0] != 0xa*/ ) {
+        while(s[0] && s[0] != spacer_glyph && s[0] != ',') {
             printf("\tseeking symbol end\n");
             *s++;
         }
         return s;
     }
     *_syms = _dict;
-    /* TODO: do I need a src_sz check here too? */
-    while(s[0] && s[0] != spacer_glyph && s[0] != ',' /*&& s[0] != 0xa*/ && s[0] != spacer_glyph) {
+    while(s[0] && s[0] != spacer_glyph && s[0] != ',') {
         *_dict++ = *s++;
         if(*s == ' ')
             s = walk_whitespace(s), *_dict++ = ' ';

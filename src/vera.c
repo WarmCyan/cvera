@@ -13,8 +13,8 @@ WITH REGARD TO THIS SOFTWARE.
 #include <stdio.h>
 
 #define SRC_SZ 0x8000 /* maximum size of input vera source code */
-#define DIC_SZ 0x8000 /* TODO: ? */
-#define SYM_SZ 0x100  /* maximum length of a symbol...or is it the maximum number of unique symbols? */
+#define DIC_SZ 0x8000 /* maximum combined text size of all symbol names? */
+#define SYM_SZ 0x100  /* maximum number of unique symbols? */
 #define RUL_SZ 0x80   /* maximum number of rules we can handle */
 
 /* src is the full input source code */
@@ -25,12 +25,15 @@ static char spacer_glyph, src[SRC_SZ];
  * not? or maybe you just want a pointer separate from the array to be able to
  * iterate/index into it without losing the pointer to the beginning of the
  * array? */
+/* TODO: I'm still not actually sure what dict is */
 static char dict[DIC_SZ], *_dict = dict;
+/* So....dict is an array of all symbol names separated by null terms, and each
+ * entry in syms then is a reference into a point within that dict? */
 static char *syms[SYM_SZ], **_syms = syms;
 /* acc is the current bag of facts, stands for accumulator, is the current count
  * of each symbol */
 /* presumably each rule has a count of each symbol in lhs vs rhs (the *2 part?)
- */
+*/
 static int acc[SYM_SZ], rules[RUL_SZ][SYM_SZ * 2], _rules = 0;
 
 /* iterate through source until we find a non-whitespace character */
@@ -40,76 +43,90 @@ walk_whitespace(char *s) {
      * segfaults after removing the check for line feed in walk_symbol, but now
      * we're getting different registers at the end than original.c */
     printf("(");
-	while(s[0] && s[0] <= 0x20 /* && s - &src[0] < SRC_SZ*/) {
+    while(s[0] && s[0] <= 0x20 /* && s - &src[0] < SRC_SZ*/) {
         printf("'%c`", s[0]);
-		s++;
+        s++;
     }
     printf(")");
     printf("[%02x]", s[0]);
-	return s;
+    return s;
 }
 
-/* ...go to the end of src? */
-/* hmmm no this is just finding the next null term? */
+/* find the next null terminator. */
 static char *
-scap(char *s) {
-	while(*s) s++;
-	return s;
+where_is_null(char *s) {
+    while(*s) s++;
+    return s;
 }
 
+/* this is only being called on new symbols in walk_symbol */
 static void
 trim(char **s) {
-	char *cap = scap(*s) - 1;
-	while(*cap) {
-		if(*cap > 0x20) break;
-		*cap = 0; /* add null terminators at the end of the symbol until we find a ? */
-		cap--;
-	}
+    char *cap = where_is_null(*s) - 1;
+    /* work backwards from null terminator until we find a real letter,
+     * turning any whitespace into moar null terms. */
+    while(*cap) {
+        if(*cap > 0x20) break;
+        *cap = 0;
+        cap--;
+    }
 }
 
 /* check if the two passed symbols are the same */
 static int
 symbol_compare(char *a, char *b) {
     printf("\tcompare:");
-	while(*a && *b) {
+    while(*a && *b) {
         printf("%c:%c ", *a, *b);
-		if((*a == ',' || *a == spacer_glyph) && !*b) break;
-		if(*a != *b) break;
+        if((*a == ',' || *a == spacer_glyph) && !*b) break;
+        if(*a != *b) break;
         /* ...for whatever reason, walking spaces on a always seems to go one
          * character too far?! and subtracting 1 fixes it, but I don't
          * understand, when printing the characters being skipped, that first
          * letter in new word doesn't show up... * don't understand, when
          * printing the characters being skipped, that first letter in new word
          * doesn't show up... */
-		if(*a == ' ') a = walk_whitespace(a) - 1;
-		if(*b == ' ') b = walk_whitespace(b) - 1;
+        if(*a == ' ') a = walk_whitespace(a) - 1;
+        if(*b == ' ') b = walk_whitespace(b) - 1;
         /* I think a potential problem is a/b aren't trimmed, so newlines in
          * the middle of symbols might break? so we fix by walking whitespace on
          * < 0x20 here (as long as not null term?) */
         /*if (*a <= 0x20 && *a > 0x0) a = walk_whitespace(a);
-        if (*b <= 0x20 && *b > 0x0) b = walk_whitespace(b);*/
-		a++, b++;
-	}
+          if (*b <= 0x20 && *b > 0x0) b = walk_whitespace(b);*/
+        a++, b++;
+    }
     /* two symbols are the same if we've made it this far and a is indeed at the
      * end of a symbol? (comma, spacer, or whitespace) */
     /* OH. I guess we're negating *b because if we iterated to the end of it,
      * it's gonna be a null term? so !*b should be non-null (thus true) and a
      * should be the end of a symbol in some way */
     printf("\n");
-	return !*b && (*a == ',' || *a == spacer_glyph || *a <= 0x20);
+    return !*b && (*a == ',' || *a == spacer_glyph || *a <= 0x20);
 }
 
 static int
 find_symbol_index(char *s) {
-	int i, len = _syms - &syms[0];
-	for(i = 0; i < len; i++) {
-		if(symbol_compare(s, syms[i])) {
+    int i, len = _syms - &syms[0];
+    for(i = 0; i < len; i++) {
+        if(symbol_compare(s, syms[i])) {
             printf("\tfound!\n");
-			return i;
+            return i;
         }
     }
     printf("\tnew!\n");
-	return -1;
+    return -1;
+}
+
+static void
+print_dict() {
+    printf("########\n");
+    int i;
+    for (i = 0; i < DIC_SZ; i++) {
+        if (dict[i]) {
+            printf("DIC %d:", i);
+            printf("%c\n", dict[i]);
+        }
+    }
 }
 
 /* Iterate forward until we hit the end of this symbol, which should be
@@ -118,9 +135,9 @@ find_symbol_index(char *s) {
  * reference to the symbol is put into id romehow? */
 static char *
 walk_symbol(char *s, int *id) {
-	s = walk_whitespace(s);
-	*id = find_symbol_index(s);
-	if(*id > -1) {
+    s = walk_whitespace(s);
+    *id = find_symbol_index(s);
+    if(*id > -1) {
         /* We hit this code if this is a symbol we've encountered before? */
 
         /* TODO: why are we explicitly checking for 0xa? That's a line feed
@@ -133,22 +150,23 @@ walk_symbol(char *s, int *id) {
          * that should be delineating symbols. */
         /* This did indeed seem to be why tests 1 and 2 were failing. But, now
          * the original tests definitely don't line up :( */
-		while(s[0] && s[0] != spacer_glyph && s[0] != ',' && s - src < SRC_SZ /*&& s[0] != 0xa*/ ) {
+        while(s[0] && s[0] != spacer_glyph && s[0] != ',' && s - src < SRC_SZ /*&& s[0] != 0xa*/ ) {
             printf("\tseeking symbol end\n");
-			*s++;
+            *s++;
         }
-		return s;
-	}
-	*_syms = _dict;
+        return s;
+    }
+    *_syms = _dict;
     /* TODO: do I need a src_sz check here? */
-	while(s[0] && s[0] != spacer_glyph && s[0] != ',' /*&& s[0] != 0xa*/ && s[0] != spacer_glyph) {
-		*_dict++ = *s++;
-		if(*s == ' ')
-			s = walk_whitespace(s), *_dict++ = ' ';
-	}
-	trim(_syms);
-	*_dict++ = 0, *id = _syms - &syms[0], _syms++;
-	return s;
+    while(s[0] && s[0] != spacer_glyph && s[0] != ',' /*&& s[0] != 0xa*/ && s[0] != spacer_glyph) {
+        *_dict++ = *s++;
+        if(*s == ' ')
+            s = walk_whitespace(s), *_dict++ = ' ';
+    }
+    trim(_syms);
+    *_dict++ = 0, *id = _syms - &syms[0], _syms++;
+    print_dict();
+    return s;
 }
 
 /* Note that this returns next point within source code that isn't a
@@ -156,48 +174,48 @@ walk_symbol(char *s, int *id) {
 static char *
 walk_rule(char *s) {
     printf("Walking rule...\n");
-	int id, valid = 1;
-	/* left-hand side, the rule condition. */
-	while(valid) {
-		s = walk_symbol(s, &id);
-		rules[_rules][id]++;
-		if(s[0] == ',')
-			s++, valid = 1;
-		else
-			valid = 0;
-	}
-	/* right-hand side, the rule results. */
+    int id, valid = 1;
+    /* left-hand side, the rule condition. */
+    while(valid) {
+        s = walk_symbol(s, &id);
+        rules[_rules][id]++;
+        if(s[0] == ',')
+            s++, valid = 1;
+        else
+            valid = 0;
+    }
+    /* right-hand side, the rule results. */
     /* we should be at a spacer glyph, indicating the end of condition/start of
      * results */
-	if(s[0] != spacer_glyph)
-		printf("Broken rule?!\n");
-	s++;
-	s = walk_whitespace(s);
-	valid = s[0] != spacer_glyph;
-	while(valid) {
-		s = walk_symbol(s, &id);
-		rules[_rules][id + SYM_SZ]++;
-		if(s[0] == ',')
-			s++, valid = 1;
-		else
-			valid = 0;
-	}
-	_rules++;
-	return walk_whitespace(s);
+    if(s[0] != spacer_glyph)
+        printf("Broken rule?!\n");
+    s++;
+    s = walk_whitespace(s);
+    valid = s[0] != spacer_glyph;
+    while(valid) {
+        s = walk_symbol(s, &id);
+        rules[_rules][id + SYM_SZ]++;
+        if(s[0] == ',')
+            s++, valid = 1;
+        else
+            valid = 0;
+    }
+    _rules++;
+    return walk_whitespace(s);
 }
 
 static char *
 walk_fact(char *s) {
     printf("Walking fact\n");
-	int id, valid = 1;
-	while(valid) {
-		s = walk_symbol(s, &id), acc[id]++;
-		if(s[0] == ',')
-			s++, valid = 1;
-		else
-			valid = 0;
-	}
-	return s;
+    int id, valid = 1;
+    while(valid) {
+        s = walk_symbol(s, &id), acc[id]++;
+        if(s[0] == ',')
+            s++, valid = 1;
+        else
+            valid = 0;
+    }
+    return s;
 }
 
 
@@ -212,13 +230,14 @@ print_all_symbols() {
     }
 }
 
+static void
 print_all_rules() {
     printf("-------\n");
     int i, j;
     for (i = 0; i < RUL_SZ; i++) {
         int sum = 0;
         /* determine if this rule "exists"/isn't blank if any of the associated symbol
-s are > 0 */
+           s are > 0 */
         for (j = 0; j < SYM_SZ*2; j++) {
             sum += rules[i][j];
         }
@@ -256,27 +275,27 @@ parse(char *s) {
      * conventionally '|', but can be anything.
      * (spacer glyph is the terminology used in
      * https://wiki.xxiivv.com/site/vera.html) */
-	spacer_glyph = s[0];
-	s = walk_whitespace(s);
-	while(s[0]) {
-		s = walk_whitespace(s);
-		if(s[0] == spacer_glyph) {
+    spacer_glyph = s[0];
+    s = walk_whitespace(s);
+    while(s[0]) {
+        s = walk_whitespace(s);
+        if(s[0] == spacer_glyph) {
             /* if we find another spacer glyph immediately after, we know
              * it's a fact, e.g. `|| this is a fact` */
-			if(s[1] == spacer_glyph) {
-				s = walk_fact(s + 2);
-            /* instead of a rule which starts with a single spacer glyph
-             * e.g. `|this is a condition| this is the result` */
+            if(s[1] == spacer_glyph) {
+                s = walk_fact(s + 2);
+                /* instead of a rule which starts with a single spacer glyph
+                 * e.g. `|this is a condition| this is the result` */
             } else
-				s = walk_rule(s + 1);
+                s = walk_rule(s + 1);
             print_all_symbols();
             print_all_rules();
-		} else if(s[0]) {
-			printf("Unexpected ending: [%c]%s\n", s[0], s);
-			return 0;
-		}
-	}
-	return 1;
+        } else if(s[0]) {
+            printf("Unexpected ending: [%c]%s\n", s[0], s);
+            return 0;
+        }
+    }
+    return 1;
 }
 
 
@@ -286,63 +305,63 @@ parse(char *s) {
  * apple facts) */
 static void
 prinths(int *hs) {
-	int i;
-	for(i = 0; i < SYM_SZ; i++) {
-		if(hs[i] > 1)
-			printf("%s^%d ", syms[i], hs[i]);
-		else if(hs[i])
-			printf("%s, ", syms[i]);
-	}
-	printf("\n");
+    int i;
+    for(i = 0; i < SYM_SZ; i++) {
+        if(hs[i] > 1)
+            printf("%s^%d ", syms[i], hs[i]);
+        else if(hs[i])
+            printf("%s, ", syms[i]);
+    }
+    printf("\n");
 }
 
 static int
 match(int *a, int *b) {
-	int i;
-	for(i = 0; i < SYM_SZ; i++) {
-		if(b[i] && !a[i])
-			return 0;
-	}
-	return 1;
+    int i;
+    for(i = 0; i < SYM_SZ; i++) {
+        if(b[i] && !a[i])
+            return 0;
+    }
+    return 1;
 }
 
 static void
 eval(void) {
-	int i, r = 0, steps = 0;
-	printf("AC \n"), prinths(acc);
-	while(r < _rules) {
-		if(match(acc, rules[r])) {
-			for(i = 0; i < SYM_SZ; i++) {
-				if(rules[r][i])
-					acc[i] -= 1;
-				if(rules[r][SYM_SZ + i])
-					acc[i] += 1;
-			}
-			printf("%02d \n", r), prinths(acc);
-			r = 0, steps++;
-		} else
-			r++;
-	}
+    int i, r = 0, steps = 0;
+    printf("AC \n"), prinths(acc);
+    while(r < _rules) {
+        if(match(acc, rules[r])) {
+            for(i = 0; i < SYM_SZ; i++) {
+                if(rules[r][i])
+                    acc[i] -= 1;
+                if(rules[r][SYM_SZ + i])
+                    acc[i] += 1;
+            }
+            printf("%02d \n", r), prinths(acc);
+            r = 0, steps++;
+        } else
+            r++;
+    }
 }
 
 int
 main(int argc, char *argv[]) {
-	FILE *f;
-	int a = 1;
-	if(argc < 2)
-		return !printf(
-			"Vera, 6 Dec 2024.\nusage: vera input.vera\n");
-	if(!(f = fopen(argv[a], "r")))
-		return !printf("Source missing: %s\n", argv[a]);
-	if(!fread(&src, 1, SRC_SZ, f))
-		return !printf("Source empty: %s\n", argv[a]);
-	if(parse(src))
-		eval();
+    FILE *f;
+    int a = 1;
+    if(argc < 2)
+        return !printf(
+                "Vera, 6 Dec 2024.\nusage: vera input.vera\n");
+    if(!(f = fopen(argv[a], "r")))
+        return !printf("Source missing: %s\n", argv[a]);
+    if(!fread(&src, 1, SRC_SZ, f))
+        return !printf("Source empty: %s\n", argv[a]);
+    if(parse(src))
+        eval();
     else {
         fclose(f);
         return 1; /* return non-zero to indicate failed */
     }
-	fclose(f);
-	return 0;
+    fclose(f);
+    return 0;
 }
 

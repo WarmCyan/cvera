@@ -15,27 +15,10 @@ bin/vera: cosmocc src/vera.c ## compile the vera interpreter
 	mkdir -p bin
 	cosmocc/bin/cosmocc src/vera.c -o bin/vera
 
-.PHONY: buildoriginal
-buildoriginal: bin/original ## compile the original vera.c file, useful for testing
 
-bin/original: cosmocc src/original.c ## compile original vera.c file
-	mkdir -p bin
-	cosmocc/bin/cosmocc src/original.c -o bin/original
-	
+bin/tester: cosmocc src/parser.c src/parser.h src/tester.c
+	cosmocc/bin/cosmocc -g src/tester.c src/parser.c -o bin/tester
 
-.PHONY: runall
-runall: build buildoriginal ## run each test
-	exec bin/vera tests/intro.vera
-	@echo "--------------------------------------------------"
-	exec bin/original tests/intro.vera
-	@echo "=================================================="
-	exec bin/vera tests/salad.vera
-	@echo "--------------------------------------------------"
-	exec bin/original tests/salad.vera
-	@echo "=================================================="
-	exec bin/vera tests/test1.vera
-	@echo "=================================================="
-	exec bin/vera tests/test2.vera
 
 .PHONY: clean
 clean: ## remove everything in the bin folder, start fresh!
@@ -45,11 +28,6 @@ clean: ## remove everything in the bin folder, start fresh!
 .PHONY: run
 run: build ## run a single example that's of interest
 	exec bin/vera tests/test4.vera
-
-.PHONY: runoriginal
-runoriginal: buildoriginal ## run a single example that's of interest
-	exec bin/original tests/test1.vera
-
 
 .PHONY: debug
 debug: build ## run a single example of interest with debug stuff

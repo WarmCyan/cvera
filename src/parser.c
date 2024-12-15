@@ -17,7 +17,7 @@ so if source is "apple, some fruit":
 names = ['a', 'p', 'p', 'l', 'e', 0x0, 's', 'o', 'm', 'e', ' ', 'f', 'r', 'u', 'i', 't', 0x0]
 table = [(pointer to names[0]), (pointer to names[6])]
 ---------------------------------------------- */
-struct SymTable {
+typedef struct SymTable {
     /* pointer to an array of all unique symbol names separated by null terms */
     char* names; 
     /* pointer to an array of pointers, the latter of which is each into the sym
@@ -40,7 +40,7 @@ so if source was: (given symbol table example above)
 table = [[2, 0, 0, 1], [0, 0, 2, 0]]
           ^LHS  ^RHS    ^LHS  ^RHS
 ---------------------------------------------- */
-struct RuleTable {
+typedef struct RuleTable {
     SymTable* syms;
     int* table;
     int len; /* current number/position of rules in table */
@@ -57,7 +57,7 @@ static char* walk_whitespace(char* s) {
 }
 
 /* turn all whitespace characters at end of string to null terms */
-typedef static void trim(char** s) {
+static void trim(char** s) {
     /* find the first null terminator so we can work backwards. */
     char* end = *s;
     while (*end) end++;
@@ -73,7 +73,7 @@ typedef static void trim(char** s) {
 /* check if two passed symbols are the same */
 /* I think the original assumption is that a is always the source code? hence
  * the assymetry originally */
-typedef static int compare_symbols(char* a, char* b) {
+static int compare_symbols(char* a, char* b) {
     while (*a && *b) {
         /* stop when we've reached the end of one of the symbols */
         if (*a == ',' || *a == delim || *b == ',' || *b == delim) break;

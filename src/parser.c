@@ -24,17 +24,24 @@ static char* walk_whitespace(char* s) {
 }
 
 /* turn all whitespace characters at end of string to null terms */
-static void trim(char* s) {
+static void trim(char** s) {
     /* find the first null terminator so we can work backwards. */
     printf("Inside trim\n");
     printf("%d\n", s);
-    char* end = s;
-    while (*end) end++;
+    char* end = *s;
+    while (*end) {
+        end++;
+        printf("%d\n", end);
+    }
+    printf("%d\n", end);
     end = end - 1;
     /* work backwards from the end until we find a real letter. */
     while (*end) {
         if (*end > 0x20) break; /* I'm a real letter! */
+        printf("Zero out: %d\n", end);
+        printf("%d\n", *end);
         *end = 0; /* make this a null term */
+        printf("yep!");
         end--; /* work backwards */
     }
 }
@@ -83,6 +90,7 @@ int index_of_symbol(char* s, SymTable* syms) {
 /* walk to the end of the next symbol, adding it to the symbol table if it
  * hasn't been seen before. (and store the index to that symbol) */ 
 static char* walk_symbol(char* s, int* id, SymTable* syms) {
+    printf("walk symbol %s\n", &syms->names[0]);
     s = walk_whitespace(s);
     *id = index_of_symbol(s, syms);
     printf("We passed index of symbol\n");
@@ -90,7 +98,7 @@ static char* walk_symbol(char* s, int* id, SymTable* syms) {
     if (*id > -1) {
         /* we've seen this symbol before, so just walk to the end of it 
          * (when we see a delimiter or end of fact syntax) */
-        while (s && s[0] != delim && s[0] != ',') *s++;
+        while (s && s[0] != delim && s[0] != ',') s++;
         return s;
     }
     
@@ -108,13 +116,28 @@ static char* walk_symbol(char* s, int* id, SymTable* syms) {
         /* skip anything more than one whitespace. TODO: should eventually be
          * sep pass */
         if (*s == ' ') {
-            s = walk_whitespace(s);
+            s = walk_whitespace(s) - 1;
+            /* syms->names[syms->names_len] = ' '; */
+            /* syms->names_len++; */
         }
-        s++;
+        *s++;
     }
+    printf("syms addr: %d\n", syms);
+    printf("table addr: %d\n", syms->table);
+    printf("names addr: %d\n", syms->names);
+    printf("names len: %d\n", syms->names_len);
+    printf("names first: %d\n", syms->names[0]);
+    int i;
+    for (i = 0; i < syms->names_len+10; i++) {
+        printf("%d - %d\n", i, syms->names[i]);
+    }
+    /* syms->names[syms->names_len - 1] = 0x0; */
+    /* syms-names */
+    printf("SYM: %s\n", &syms->names[0]);
     /* trim any whitespace off the end TODO: this should eventually be sep 
      * pass */
-    trim(syms->table[syms->len - 1]);
+    trim(&syms->table[syms->len - 1]);
+    printf("After trim");
     *id = syms->len - 1;
     return s;
 }

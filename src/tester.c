@@ -51,17 +51,17 @@ print_all_rules() {
         /* determine if this rule "exists"/isn't blank if any of the associated symbol
            s are > 0 */
         for (j = 0; j < SYM_SZ*2; j++) {
-            sum += rules[i*SYM_SZ + j];
+            sum += rules[i*SYM_SZ*2 + j];
         }
         if (sum > 0) {
             printf("RUL %d:|", i);
             for (j = 0; j < SYM_SZ; j++) {
                 /* handle printing symbol and multiplicity if part of the rule
                  * lhs */
-                if (rules[i*SYM_SZ + j] == 1) {
+                if (rules[i*SYM_SZ*2 + j] == 1) {
                     printf("%s,", syms[j]);
-                } else if (rules[i*SYM_SZ + j] > 1) {
-                    printf("%s:%d,", syms[j], rules[i*SYM_SZ + j]);
+                } else if (rules[i*SYM_SZ*2 + j] > 1) {
+                    printf("%s:%d,", syms[j], rules[i*SYM_SZ*2 + j]);
                 }
             }
             printf("|");
@@ -70,10 +70,10 @@ print_all_rules() {
                 /* handle printing symbol and multiplicity if part of the rule
                  * rhs */
                 rel_j = j - SYM_SZ;
-                if (rules[i*SYM_SZ + j] == 1) {
+                if (rules[i*SYM_SZ*2 + j] == 1) {
                     printf("%s,", syms[rel_j]);
-                } else if (rules[i*SYM_SZ + j] > 1) {
-                    printf("%s:%d,", syms[rel_j], rules[i*SYM_SZ + j]);
+                } else if (rules[i*SYM_SZ*2 + j] > 1) {
+                    printf("%s:%d,", syms[rel_j], rules[i*SYM_SZ*2 + j]);
                 }
             }
             printf("\n");

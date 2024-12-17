@@ -47,6 +47,11 @@ table = [2, 0, 0, 1, 0, 0, 2, 0]
 Note that I'm assuming a single dimensional rules table, do math manually
 because it's too weird and annoying to figure out how to correctly pass around
 a two dimensional array of unknown dimensions.
+
+Specifically, accessing symbol index 1 of the righthand side for the 4th rule would be:
+
+mytable.table[3 * mytable.syms->max_len * 2 + 1 + mytable.syms->max_len]
+              ^row                      !!!   ^col
 ---------------------------------------------- */
 typedef struct RuleTable {
     SymTable* syms;

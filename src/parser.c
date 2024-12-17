@@ -121,7 +121,7 @@ static char* walk_rule(char* s, RuleTable* rules) {
     /* process left-hand side, the rule condition. */
     while(still_parsing_side) {
         s = walk_symbol(s, &sym_id, rules->syms);
-        rules->table[rules->len * rules->syms->max_len + sym_id]++;
+        rules->table[rules->len * rules->syms->max_len * 2 + sym_id]++;
         if (s[0] == ',') 
             s++;
         else 
@@ -136,7 +136,7 @@ static char* walk_rule(char* s, RuleTable* rules) {
     still_parsing_side = s[0] != delim;
     while (still_parsing_side) {
         s = walk_symbol(s, &sym_id, rules->syms);
-        rules->table[rules->len * rules->syms->max_len + sym_id + rules->syms->max_len]++;
+        rules->table[rules->len * rules->syms->max_len * 2 + sym_id + rules->syms->max_len]++;
         if (s[0] == ',')
             s++;
         else
@@ -160,7 +160,7 @@ static char* walk_fact(char* s, RuleTable* rules) {
     int still_parsing = 1;
     while (still_parsing) {
         s = walk_symbol(s, &sym_id, rules->syms);
-        rules->table[rules->len * rules->syms->max_len + sym_id + rules->syms->max_len]++; /* TODO: this is what is breaking */
+        rules->table[rules->len * rules->syms->max_len * 2 + sym_id + rules->syms->max_len]++; /* TODO: this is what is breaking */
         if (s[0] == ',')
             s++;
         else

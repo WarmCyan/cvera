@@ -11,7 +11,7 @@ static char names[NAM_SZ];
 static char* _names = names;
 static char* syms[SYM_SZ];
 static char** _syms = syms;
-static int* rules[RUL_SZ][SYM_SZ * 2];
+static int rules[RUL_SZ * SYM_SZ * 2];
 
 
 static SymTable sym_table = {
@@ -24,7 +24,7 @@ static SymTable sym_table = {
 
 static RuleTable rule_table = {
     .syms = &sym_table,
-    .table = rules[0],
+    .table = rules,
     .len = 0,
     .max_len = RUL_SZ,
 };
@@ -42,29 +42,6 @@ static void print_all_symbols() {
 }
 
 int main(int argc, char* argv[]) {
-
-    printf("-----\n");
-    puts(names);
-    names[0] = 'h';
-    names[1] = 'i';
-    puts(names);
-    char* n = names;
-    puts(n);
-    *n = 'n';
-    n[0] = 'r';
-    puts(n);
-    
-    puts(sym_table.names);
-    SymTable* mysyms = &sym_table;
-    puts(mysyms->names);
-
-    mysyms->names[0] = 'o';
-    puts(mysyms->names);
-    printf("%s\n", mysyms->names);
-    printf("-----\n");
-
-
-    
     FILE *f;
     int a = 1;
     if(argc < 2)
@@ -87,23 +64,6 @@ int main(int argc, char* argv[]) {
 
     /* SymTable* mysyms = &sym_table; */
 
-    printf("Initial addr: %d\n", names);
-    printf("Initial: %s\n", &names[0]);
-    printf("Initial: %s\n", &mysyms->names[0]);
-
-    mysyms->names[0] = 'h';
-    mysyms->names[1] = 'i';
-    /* names[0] = 'h'; */
-    /* names[1] = 'i'; */
-    /* *_names = 'h'; */
-    /* _names++; */
-    /* *_names = 'i'; */
-    /* _names--; */
-    
-    printf("Initial (safer?): %s\n", &_names);
-    printf("Initial (safer?): %s\n", &_names[0]);
-    printf("Initial: %s\n", &mysyms->names[0]);
-    
     if(parse(src, &rule_table)) {
         if (argv[2] == "symbols") {
             print_all_symbols();

@@ -18,7 +18,7 @@ static char delim; /* the spacer glyph delimiter, conventionally '|' */
 
 /* iterate the pointer until we find the first non-whitespace character */ 
 static char* walk_whitespace(char* s) {
-    while (s && s[0] <= 0x20) /* 'space' and below */
+    while (s[0] && s[0] <= 0x20) /* 'space' and below */
         s++;
     return s;
 }
@@ -26,22 +26,15 @@ static char* walk_whitespace(char* s) {
 /* turn all whitespace characters at end of string to null terms */
 static void trim(char** s) {
     /* find the first null terminator so we can work backwards. */
-    printf("Inside trim\n");
-    printf("%d\n", s);
     char* end = *s;
     while (*end) {
         end++;
-        printf("%d\n", end);
     }
-    printf("%d\n", end);
     end = end - 1;
     /* work backwards from the end until we find a real letter. */
     while (*end) {
         if (*end > 0x20) break; /* I'm a real letter! */
-        printf("Zero out: %d\n", end);
-        printf("%d\n", *end);
         *end = 0; /* make this a null term */
-        printf("yep!");
         end--; /* work backwards */
     }
 }
@@ -76,10 +69,7 @@ int compare_symbols(char* a, char* b) {
 /* find ID of symbol in a symbols table */
 int index_of_symbol(char* s, SymTable* syms) {
     int i = 0;
-    printf("hello?\n");
-    printf("%d\n", syms->len);
     for (i = 0; i < syms->len; i++) {
-        printf("%d\n", i);
         if (compare_symbols(s, syms->table[i])) {
             return i;
         }
@@ -90,15 +80,12 @@ int index_of_symbol(char* s, SymTable* syms) {
 /* walk to the end of the next symbol, adding it to the symbol table if it
  * hasn't been seen before. (and store the index to that symbol) */ 
 static char* walk_symbol(char* s, int* id, SymTable* syms) {
-    printf("walk symbol %s\n", &syms->names[0]);
     s = walk_whitespace(s);
     *id = index_of_symbol(s, syms);
-    printf("We passed index of symbol\n");
-    printf("ID:%d\n", *id);
     if (*id > -1) {
         /* we've seen this symbol before, so just walk to the end of it 
          * (when we see a delimiter or end of fact syntax) */
-        while (s && s[0] != delim && s[0] != ',') s++;
+        while (s[0] && s[0] != delim && s[0] != ',') s++;
         return s;
     }
     
@@ -106,11 +93,9 @@ static char* walk_symbol(char* s, int* id, SymTable* syms) {
     /* assign the next symbol in the symbols table to the current position of
      * the symbol names string. */
     syms->table[syms->len] = &(syms->names[syms->names_len]);
-    printf("len pre: %d\n", syms->len);
     syms->len = syms->len + 1;
-    printf("len post: %d\n", syms->len);
     /* write the symbol string to the names array */
-    while (s && s[0] != delim && s[0] != ',') {
+    while (s[0] && s[0] != delim && s[0] != ',') {
         syms->names[syms->names_len] = s[0];
         syms->names_len++;
         /* skip anything more than one whitespace. TODO: should eventually be
@@ -122,22 +107,9 @@ static char* walk_symbol(char* s, int* id, SymTable* syms) {
         }
         *s++;
     }
-    printf("syms addr: %d\n", syms);
-    printf("table addr: %d\n", syms->table);
-    printf("names addr: %d\n", syms->names);
-    printf("names len: %d\n", syms->names_len);
-    printf("names first: %d\n", syms->names[0]);
-    int i;
-    for (i = 0; i < syms->names_len+10; i++) {
-        printf("%d - %d\n", i, syms->names[i]);
-    }
-    /* syms->names[syms->names_len - 1] = 0x0; */
-    /* syms-names */
-    printf("SYM: %s\n", &syms->names[0]);
     /* trim any whitespace off the end TODO: this should eventually be sep 
      * pass */
     trim(&syms->table[syms->len - 1]);
-    printf("After trim");
     *id = syms->len - 1;
     return s;
 }
@@ -148,7 +120,7 @@ static char* walk_rule(char* s, RuleTable* rules) {
     /* process left-hand side, the rule condition. */
     while(still_parsing_side) {
         s = walk_symbol(s, &sym_id, rules->syms);
-        rules->table[rules->len][sym_id]++;
+        rules->table[rules->len * rules->syms->max_len + sym_id]++;
         if (s[0] == ',') 
             s++;
         else 
@@ -163,7 +135,7 @@ static char* walk_rule(char* s, RuleTable* rules) {
     still_parsing_side = s[0] != delim;
     while (still_parsing_side) {
         s = walk_symbol(s, &sym_id, rules->syms);
-        rules->table[rules->len][sym_id + rules->syms->max_len]++;
+        rules->table[rules->len * rules->syms->max_len + sym_id + rules->syms->max_len]++;
         if (s[0] == ',')
             s++;
         else
@@ -187,7 +159,7 @@ static char* walk_fact(char* s, RuleTable* rules) {
     int still_parsing = 1;
     while (still_parsing) {
         s = walk_symbol(s, &sym_id, rules->syms);
-        rules->table[rules->len][sym_id + rules->syms->max_len]++;
+        rules->table[rules->len * rules->syms->max_len + sym_id + rules->syms->max_len]++; /* TODO: this is what is breaking */
         if (s[0] == ',')
             s++;
         else
@@ -204,7 +176,7 @@ int parse(char* s, RuleTable* rules) {
      * https://wiki.xxiivv.com/site/vera.html) */
     delim = s[0];
     s = walk_whitespace(s);
-    while (s) {
+    while (s[0]) {
         s = walk_whitespace(s);
         if (s[0] == delim) {
             if (s[1] == delim) {

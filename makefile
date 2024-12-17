@@ -17,12 +17,16 @@ bin/vera: cosmocc src/vera.c ## compile the vera interpreter
 
 
 bin/tester: cosmocc src/parser.c src/parser.h src/tester.c
-	cosmocc/bin/cosmocc -Wall -g src/tester.c src/parser.c -o bin/tester
+	cosmocc/bin/cosmocc src/tester.c src/parser.c -o bin/tester
 
 .PHONY: test
 test: bin/tester
 	exec bin/tester tests/intro.vera
 
+.PHONY: testgcc
+testgcc:
+	gcc -Wall -g src/tester.c src/parser.c -o bin/tester
+	gdb --args bin/tester tests/intro.vera
 
 .PHONY: clean
 clean: ## remove everything in the bin folder, start fresh!

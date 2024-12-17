@@ -46,7 +46,7 @@ table = [[2, 0, 0, 1], [0, 0, 2, 0]]
 ---------------------------------------------- */
 typedef struct RuleTable {
     SymTable* syms;
-    int** table;
+    int* table;
     int len; /* current number/position of rules in table */
     int max_len; /* bounds for the rules table */
 } RuleTable;

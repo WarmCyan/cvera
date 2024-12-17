@@ -45,7 +45,7 @@ static void trim(char** s) {
 int compare_symbols(char* a, char* b) {
     while (*a && *b) {
         /* stop when we've reached the end of one of the symbols */
-        if (*a == ',' || *a == delim || *b == ',' || *b == delim) break;
+        if ((*a == ',' || *a == delim) && !*b) break;
         /* obviously if they don't equal, stop! */
         if (*a != *b) break;
         /* we don't care about differing amounts of whitespace within symbols,
@@ -63,7 +63,7 @@ int compare_symbols(char* a, char* b) {
      * comma or delimiter */
     /* TODO: this may not account for untrimmed symbols, which I think is why
      * original had an additional *a <= 0x20 check */
-    return (!*a || *a == ',' || *a == delim) && (!*b || *b == ',' || *b == delim);
+    return !*b && (*a == ',' || *a == delim || *a <= 0x20);
 }
 
 /* find ID of symbol in a symbols table */
@@ -107,6 +107,7 @@ static char* walk_symbol(char* s, int* id, SymTable* syms) {
         }
         *s++;
     }
+    syms->names_len++; /* increment once more to ensure a null term between names */
     /* trim any whitespace off the end TODO: this should eventually be sep 
      * pass */
     trim(&syms->table[syms->len - 1]);

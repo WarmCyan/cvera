@@ -11,17 +11,20 @@ cosmocc: ## grab and set up the cosmopolitan toolchain
 .PHONY: build
 build: bin/vera ## run all compiliation steps
 
-bin/vera: cosmocc src/vera.c ## compile the vera interpreter
+bin:
+	mkdir bin
+
+bin/vera: bin cosmocc src/vera.c ## compile the vera interpreter
 	mkdir -p bin
 	cosmocc/bin/cosmocc src/vera.c -o bin/vera
 
 
-bin/tester: cosmocc src/parser.c src/parser.h src/tester.c
+bin/tester: bin cosmocc src/parser.c src/parser.h src/tester.c
 	cosmocc/bin/cosmocc src/tester.c src/parser.c -o bin/tester
 
 .PHONY: test
 test: bin/tester
-	exec bin/tester tests/intro.vera
+	exec bin/tester tests/intro.vera --prules
 
 .PHONY: testgcc
 testgcc:

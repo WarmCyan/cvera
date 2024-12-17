@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "parser.h"
 
 #define SRC_SZ 32768 /* maximum size of input vera source code */
@@ -41,6 +42,46 @@ static void print_all_symbols() {
     }
 }
 
+static void
+print_all_rules() {
+    printf("-------\n");
+    int i, j;
+    for (i = 0; i < RUL_SZ; i++) {
+        int sum = 0;
+        /* determine if this rule "exists"/isn't blank if any of the associated symbol
+           s are > 0 */
+        for (j = 0; j < SYM_SZ*2; j++) {
+            sum += rules[i*SYM_SZ + j];
+        }
+        if (sum > 0) {
+            printf("RUL %d:|", i);
+            for (j = 0; j < SYM_SZ; j++) {
+                /* handle printing symbol and multiplicity if part of the rule
+                 * lhs */
+                if (rules[i*SYM_SZ + j] == 1) {
+                    printf("%s,", syms[j]);
+                } else if (rules[i*SYM_SZ + j] > 1) {
+                    printf("%s:%d,", syms[j], rules[i*SYM_SZ + j]);
+                }
+            }
+            printf("|");
+            int rel_j;
+            for (j = SYM_SZ; j < SYM_SZ*2; j++) {
+                /* handle printing symbol and multiplicity if part of the rule
+                 * rhs */
+                rel_j = j - SYM_SZ;
+                if (rules[i*SYM_SZ + j] == 1) {
+                    printf("%s,", syms[rel_j]);
+                } else if (rules[i*SYM_SZ + j] > 1) {
+                    printf("%s:%d,", syms[rel_j], rules[i*SYM_SZ + j]);
+                }
+            }
+            printf("\n");
+        }
+    }
+}
+
+
 int main(int argc, char* argv[]) {
     FILE *f;
     int a = 1;
@@ -65,8 +106,13 @@ int main(int argc, char* argv[]) {
     /* SymTable* mysyms = &sym_table; */
 
     if(parse(src, &rule_table)) {
-        if (argv[2] == "symbols") {
-            print_all_symbols();
+        if (argc > 2) {
+            if (strcmp(argv[2], "--psymbols") == 0) {
+                print_all_symbols();
+            }
+            if (strcmp(argv[2], "--prules") == 0) {
+                print_all_rules();
+            }
         }
     }
     else {

@@ -41,8 +41,12 @@ so if source was: (given symbol table example above)
 |apple, apple| some fruit
 || apple, apple
 
-table = [[2, 0, 0, 1], [0, 0, 2, 0]]
-          ^LHS  ^RHS    ^LHS  ^RHS
+table = [2, 0, 0, 1, 0, 0, 2, 0]
+         ^LHS0 ^RHS0 ^LHS1 ^RHS1
+
+Note that I'm assuming a single dimensional rules table, do math manually
+because it's too weird and annoying to figure out how to correctly pass around
+a two dimensional array of unknown dimensions.
 ---------------------------------------------- */
 typedef struct RuleTable {
     SymTable* syms;

@@ -18,12 +18,12 @@ SYM 14:a box
 ==================================================
 bin/tester tests/intro.vera --prules
 --------------------------------------------------
-RUL 0:||The first character in a file assigns a spacer glyph.,
-RUL 1:||A program is made of rules and facts.,
-RUL 2:||Two spacers indicate the creation of facts,
-RUL 3:||Facts are separated by commas,a matchbox,a log,paper,
-RUL 4:|A rule has a left side,|And a right side.,
-RUL 5:|Facts on the left side,|are replaced by facts in the right side,
-RUL 6:|a log,a flame,|a warm fire,
-RUL 7:|a matchbox,|a match,a box,
-RUL 8:|paper,a match,|a flame,
+RUL 0:||The first character in a file assigns a spacer glyph.
+RUL 1:||A program is made of rules and facts.
+RUL 2:||Two spacers indicate the creation of facts
+RUL 3:||Facts are separated by commas,a matchbox,a log,paper
+RUL 4:|A rule has a left side|And a right side.
+RUL 5:|Facts on the left side|are replaced by facts in the right side
+RUL 6:|a log,a flame|a warm fire
+RUL 7:|a matchbox|a match,a box
+RUL 8:|paper,a match|a flame

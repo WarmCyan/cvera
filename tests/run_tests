@@ -7,7 +7,7 @@ for cmdfile in tests/runs/*00; do
   cmd=$(cat "$cmdfile")
 
   # run the test command
-  $cmd > tests/outs/$filename.txt
+  $cmd > "tests/outs/${filename}.txt"
 
   # compare against target output
   diff "tests/runs/${filename}_target" "tests/outs/${filename}.txt" &> /dev/null
@@ -22,7 +22,7 @@ for cmdfile in tests/runs/*00; do
   fi
 
   echo " $cmd"
-  
+
   # if this command was run with -v, show the detailed diff
   if [[ "$failed" != 0 && "$#" -gt 0 && "$1" == "-v" ]]; then
    diff --color "tests/runs/${filename}_target" "tests/outs/${filename}.txt"

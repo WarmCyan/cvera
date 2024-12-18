@@ -55,25 +55,35 @@ print_all_rules() {
         }
         if (sum > 0) {
             printf("RUL %d:|", i);
+            int first_printed = 0; /* use this to determine whether to print, or not */
             for (j = 0; j < SYM_SZ; j++) {
                 /* handle printing symbol and multiplicity if part of the rule
                  * lhs */
                 if (rules[i*SYM_SZ*2 + j] == 1) {
-                    printf("%s,", syms[j]);
+                    if (first_printed) printf(",");
+                    first_printed = 1;
+                    printf("%s", syms[j]);
                 } else if (rules[i*SYM_SZ*2 + j] > 1) {
-                    printf("%s:%d,", syms[j], rules[i*SYM_SZ*2 + j]);
+                    if (first_printed) printf(",");
+                    first_printed = 1;
+                    printf("%s:%d", syms[j], rules[i*SYM_SZ*2 + j]);
                 }
             }
             printf("|");
+            first_printed = 0;
             int rel_j;
             for (j = SYM_SZ; j < SYM_SZ*2; j++) {
                 /* handle printing symbol and multiplicity if part of the rule
                  * rhs */
                 rel_j = j - SYM_SZ;
                 if (rules[i*SYM_SZ*2 + j] == 1) {
-                    printf("%s,", syms[rel_j]);
+                    if (first_printed) printf(",");
+                    first_printed = 1;
+                    printf("%s", syms[rel_j]);
                 } else if (rules[i*SYM_SZ*2 + j] > 1) {
-                    printf("%s:%d,", syms[rel_j], rules[i*SYM_SZ*2 + j]);
+                    if (first_printed) printf(",");
+                    first_printed = 1;
+                    printf("%s:%d", syms[rel_j], rules[i*SYM_SZ*2 + j]);
                 }
             }
             printf("\n");

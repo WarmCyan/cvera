@@ -27,3 +27,47 @@ RUL 5:|Facts on the left side|are replaced by facts in the right side
 RUL 6:|a log,a flame|a warm fire
 RUL 7:|a matchbox|a match,a box
 RUL 8:|paper,a match|a flame
+==================================================
+bin/tester tests/salad.vera --psymbols
+--------------------------------------------------
+SYM 0:sugar
+SYM 1:oranges
+SYM 2:apples
+SYM 3:cherries
+SYM 4:flour
+SYM 5:apple cake
+SYM 6:fruit salad
+SYM 7:fruit cake
+==================================================
+bin/tester tests/salad.vera --prules
+--------------------------------------------------
+RUL 0:||sugar
+RUL 1:||oranges
+RUL 2:||apples:2
+RUL 3:||cherries
+RUL 4:||flour
+RUL 5:|sugar,apples,flour|apple cake
+RUL 6:|oranges,apples,cherries|fruit salad
+RUL 7:|apple cake,fruit salad|fruit cake
+==================================================
+bin/tester tests/hello.vera --psymbols
+--------------------------------------------------
+SYM 0:------------
+SYM 1:--
+SYM 2:Nova
+SYM 3:Nova is a lightweight language for conversing with computers.
+It's flexible
+SYM 4:makes no assumptions
+SYM 5:and allows for exploration and good conversation.
+Nova lets you write what you mean.
+SYM 6:an axe
+SYM 7:a tree
+SYM 8:a log
+SYM 9:the button was pressed
+SYM 10:the door is closed
+SYM 11:the door is open
+SYM 12:todo list
+SYM 13:wash dishes
+SYM 14:sweep floors
+SYM 15:get groceries
+SYM 16:feed pets

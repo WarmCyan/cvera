@@ -1,3 +1,5 @@
 cosmocc/*
 tests/outs/*
+tests/runs/*
+tests/splits/*
 bin/*

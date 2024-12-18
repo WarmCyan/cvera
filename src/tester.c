@@ -33,7 +33,7 @@ static RuleTable rule_table = {
 
 
 static void print_all_symbols() {
-    printf("-------\n");
+    /* printf("-------\n"); */
     int i;
     for (i = 0; i < SYM_SZ; i++) {
         if (syms[i]) {
@@ -44,7 +44,7 @@ static void print_all_symbols() {
 
 static void
 print_all_rules() {
-    printf("-------\n");
+    /* printf("-------\n"); */
     int i, j;
     for (i = 0; i < RUL_SZ; i++) {
         int sum = 0;

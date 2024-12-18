@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+
+mkdir -p tests/outs
+
+for cmdfile in tests/runs/*00; do
+  filename=$(basename "$cmdfile")
+  cmd=$(cat "$cmdfile")
+
+  # run the test command
+  $cmd > tests/outs/$filename.txt
+
+  # compare against target output
+  diff "tests/runs/${filename}_target" "tests/outs/${filename}.txt" &> /dev/null
+
+  failed=$?
+
+  # show indicator
+  if [[ "$failed" == 0 ]]; then
+      echo -ne "\033[42m\033[30m PASS \033[0m"
+  else
+      echo -ne "\033[41m\033[30m FAIL \033[0m"
+  fi
+
+  echo " $cmd"
+  
+  # if this command was run with -v, show the detailed diff
+  if [[ "$failed" != 0 && "$#" -gt 0 && "$1" == "-v" ]]; then
+   diff --color "tests/runs/${filename}_target" "tests/outs/${filename}.txt"
+  fi
+  
+done

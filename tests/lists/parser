@@ -1,0 +1,29 @@
+bin/tester tests/intro.vera --psymbols
+--------------------------------------------------
+SYM 0:The first character in a file assigns a spacer glyph.
+SYM 1:A program is made of rules and facts.
+SYM 2:Two spacers indicate the creation of facts
+SYM 3:Facts are separated by commas
+SYM 4:a matchbox
+SYM 5:a log
+SYM 6:paper
+SYM 7:A rule has a left side
+SYM 8:And a right side.
+SYM 9:Facts on the left side
+SYM 10:are replaced by facts in the right side
+SYM 11:a flame
+SYM 12:a warm fire
+SYM 13:a match
+SYM 14:a box
+==================================================
+bin/tester tests/intro.vera --prules
+--------------------------------------------------
+RUL 0:||The first character in a file assigns a spacer glyph.,
+RUL 1:||A program is made of rules and facts.,
+RUL 2:||Two spacers indicate the creation of facts,
+RUL 3:||Facts are separated by commas,a matchbox,a log,paper,
+RUL 4:|A rule has a left side,|And a right side.,
+RUL 5:|Facts on the left side,|are replaced by facts in the right side,
+RUL 6:|a log,a flame,|a warm fire,
+RUL 7:|a matchbox,|a match,a box,
+RUL 8:|paper,a match,|a flame,

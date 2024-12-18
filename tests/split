@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+
+mkdir -p tests/splits/$1  # makefile target, tests/lists/$1 will be dependency
+mkdir -p tests/runs
+
+rm -rf tests/runs/$1_*
+echo "Splitting tests/lists/$1..."
+
+# split up each command/target pair
+csplit --suppress-matched --quiet --elide-empty-files tests/lists/$1 '/==================================================/' '{*}' --prefix tests/splits/$1/$1
+
+# then go in and split up the command from the target into separate files
+for file in tests/splits/$1/*; do
+  filename=$(basename "$file")
+  echo "Splitting $file... to tests/runs/${filename}_"
+  csplit --suppress-matched --quiet --elide-empty-files $file '/--------------------------------------------------/' '{*}' --prefix "tests/runs/${filename}_"
+done;
+
+# rename all of the target files as _target (with same prefix as command file)
+for file in tests/runs/*1; do
+  mv $file "${file::(-1)}0_target"
+done

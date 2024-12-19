@@ -9,9 +9,7 @@
 
 static char src[SRC_SZ];
 static char names[NAM_SZ];
-static char* _names = names;
 static char* syms[SYM_SZ];
-static char** _syms = syms;
 static int rules[RUL_SZ * SYM_SZ * 2];
 
 
@@ -33,7 +31,6 @@ static RuleTable rule_table = {
 
 
 static void print_all_symbols() {
-    /* printf("-------\n"); */
     int i;
     for (i = 0; i < SYM_SZ; i++) {
         if (syms[i]) {
@@ -44,7 +41,6 @@ static void print_all_symbols() {
 
 static void
 print_all_rules() {
-    /* printf("-------\n"); */
     int i, j;
     for (i = 0; i < RUL_SZ; i++) {
         int sum = 0;
@@ -102,18 +98,6 @@ int main(int argc, char* argv[]) {
         return !printf("Source missing: %s\n", argv[a]);
     if(!fread(&src, 1, SRC_SZ, f))
         return !printf("Source empty: %s\n", argv[a]);
-
-
-
-    /* SymTable sym_table = { */
-    /*     .names = _names, */
-    /*     .table = _syms, */
-    /*     .len = 0, */
-    /*     .max_len = SYM_SZ, */
-    /*     .names_len = 32768, */
-    /* }; */
-
-    /* SymTable* mysyms = &sym_table; */
 
     if(parse(src, &rule_table)) {
         if (argc > 2) {

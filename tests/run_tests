@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+# go through each command file in tests/runs, run the command, and diff the
+# output with the associated target output file
+#
+# optionally output the diff output on failed tests if `-v` specified
+
 mkdir -p tests/outs
 
 for cmdfile in tests/runs/*00; do
@@ -23,7 +28,7 @@ for cmdfile in tests/runs/*00; do
 
   echo " $cmd"
 
-  # if this command was run with -v, show the detailed diff
+  # if this command was run with -v and it failed, show the detailed diff
   if [[ "$failed" != 0 && "$#" -gt 0 && "$1" == "-v" ]]; then
    diff --color "tests/runs/${filename}_target" "tests/outs/${filename}.txt"
   fi

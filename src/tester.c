@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <stdlib.h>
+#include <string.h>
 #include "parser.h"
 
 #define SRC_SZ 32768 /* maximum size of input vera source code */

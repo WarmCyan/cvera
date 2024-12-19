@@ -61,10 +61,9 @@ int compare_symbols(char* a, char* b) {
     /* symbols are the same if we successfully made it to the end of both
      * symbols - this can either mean the symbol is at a null term, or at a
      * comma or delimiter */
-    /* TODO: this may not account for untrimmed symbols, which I think is why
-     * original had an additional *a <= 0x20 check */
-    /* return !*b && (*a == ',' || *a == delim || *a <= 0x20); */
-    /* return !*b && (*a == ',' || *a == delim); */
+    /* Note that we walk whitespace because the *a <= 0x20 check will break a
+     * comparison between a symbol and a longer symbol with the same prefix and
+     * a space, e.g.: "Nova", "Nova and other stuff" */
     a = walk_whitespace(a);
     return !*b && (*a == ',' || *a == delim || *a <= 0x20);
 }

@@ -135,7 +135,7 @@ static char* walk_rule(char* s, RuleTable* rules) {
         printf("Broken rule?!\n"); /* TODO: figure out better way to do error reporting */
     s++;
     s = walk_whitespace(s);
-    still_parsing_side = (s[0] != delim) && (s[0] > 0x20);
+    still_parsing_side = (s[0] && s[0] != delim);
     while (still_parsing_side) {
         s = walk_symbol(s, &sym_id, rules->syms);
         rules->table[rules->len * rules->syms->max_len * 2 + sym_id + rules->syms->max_len]++;

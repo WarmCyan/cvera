@@ -16,6 +16,7 @@ cosmocc: ## grab and set up the cosmopolitan toolchain (use make [...] CC=cc if 
 	mkdir cosmocc
 	cd cosmocc && wget https://cosmo.zip/pub/cosmocc/cosmocc.zip
 	cd cosmocc && unzip cosmocc.zip
+	rm cosmocc/cosmocc.zip
 
 # TODO: use fancy makefile vars to automate for any lists
 tests/splits/parser: tests/lists/parser

@@ -9,8 +9,9 @@
 # and each distinct test is delineated by 50 ='s:
 # ==================================================
 #
-# test list files go into tests/splits. Final separated command and output files
-# go into tests/runs, with the output file suffixed '_target'
+# test list files are from tests/lists, and each separate test is added into
+# tests/splits. Final separated command and output files go into tests/runs,
+# with the output file suffixed '_target'
 
 mkdir -p "tests/splits/$1"  # makefile target, tests/lists/$1 will be dependency
 mkdir -p tests/runs

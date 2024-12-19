@@ -18,7 +18,7 @@ I've split out the parser code into a separate `parser.h` and `parser.c`, with
 the idea that I can build separate executables for passes that all take
 advantage of the same basic parsing logic.
 
-The parser fills a rule table and sym table struct (see
+The parser fills a rule table and symbol table struct (see
 [`parser.h`](src/parser.h)) so it's not tied to a specific means of memory
 management, and potentially allows for parsing into multiple different
 rule/symbol tables if that becomes relevant.

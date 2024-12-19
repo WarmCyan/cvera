@@ -1,5 +1,5 @@
 DONE: separate out parsing functions into separate header
-STRT: better test infra
+DONE: better test infra
 TODO: step flag
 TODO: output flag
 TODO: debug compiler flag (https://stackoverflow.com/questions/21272744/why-do-people-use-ifdef-for-feature-flag-tests)

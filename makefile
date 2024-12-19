@@ -29,7 +29,7 @@ bin/tester: bin cosmocc src/parser.c src/parser.h src/tester.c
 
 .PHONY: test
 test: bin/tester
-	exec bin/tester tests/intro.vera --prules
+	exec bin/tester tests/test2.vera --psymbols
 
 .PHONY: testgcc
 testgcc:

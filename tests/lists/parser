@@ -71,3 +71,8 @@ SYM 13:wash dishes
 SYM 14:sweep floors
 SYM 15:get groceries
 SYM 16:feed pets
+==================================================
+bin/tester tests/test2.vera --psymbols
+--------------------------------------------------
+SYM 0:test
+SYM 1:test ing

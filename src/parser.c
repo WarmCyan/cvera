@@ -71,7 +71,7 @@ int compare_symbols(char* a, char* b) {
 
 /* find ID of symbol in a symbols table */
 int index_of_symbol(char* s, SymTable* syms) {
-    int i = 0;
+    int i = 0; /* symbol index */
     for (i = 0; i < syms->len; i++) {
         if (compare_symbols(s, syms->table[i])) {
             return i;

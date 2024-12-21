@@ -23,6 +23,10 @@ tests/splits/parser: tests/lists/parser
 	@-rm -rf tests/splits/parser
 	tests/split parser
 
+tests/splits/interpreter: tests/lists/interpreter
+	@-rm -rf tests/splits/interpreter
+	tests/split interpreter
+
 bin/tester: src/parser.c src/parser.h src/tester.c
 	@mkdir -p bin
 	${CC} src/tester.c src/parser.c -o bin/tester
@@ -34,10 +38,10 @@ bin/run: src/run.c src/interpreter.h src/interpreter.c src/parser.c src/parser.h
 .PHONY: test
 test: bin/run bin/tester ## run a single example test to see parser output
 	exec bin/tester tests/intro.vera --prules
-	exec bin/run tests/intro.vera
+	exec bin/run tests/intro.vera --plast
 
 .PHONY: tests
-tests: bin/tester tests/splits/parser ## run and report on all tests
+tests: bin/tester bin/run tests/splits/parser tests/splits/interpreter ## run and report on all tests
 	@tests/run_tests -v
 
 # .PHONY: tests-verbose

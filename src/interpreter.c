@@ -73,7 +73,7 @@ int step(BagOfFacts* bag, RuleTable* rules) {
                     bag->accumulator[j] -= 1;
                 /* Add any RHS facts to the accumulator */
                 if (rules->table[i * rules->syms->max_len * 2 + j + rules->syms->max_len])
-                    bag->accumulator[j + rules->syms->max_len] += 1;
+                    bag->accumulator[j] += 1;
             }
             return i;
         }
@@ -88,10 +88,8 @@ int eval(BagOfFacts* bag, RuleTable* rules, int max_steps) {
     int steps = 0;
     int last_rule_match = 0;
     while (last_rule_match != -1) {
-        printf("On step %d...\n", steps);
         steps += 1;
         last_rule_match = step(bag, rules);
-        printf("Rule matched: %d\n", last_rule_match);
         if (max_steps != -1 && steps > max_steps) break;
     }
     return steps;

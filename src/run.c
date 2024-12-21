@@ -11,6 +11,7 @@ WITH REGARD TO THIS SOFTWARE.
 ==================================================================== */
 
 #include <stdio.h>
+#include <string.h>
 #include "parser.h"
 #include "interpreter.h"
 
@@ -46,7 +47,6 @@ static BagOfFacts bag = {
 };
 
 static void print_bag() {
-    printf("================\n");
     int i;
     for (i = 0; i < SYM_SZ; i++) {
         if (acc[i] == 1)
@@ -70,13 +70,26 @@ int main(int argc, char* argv[]) {
 
     if(parse(src, &rule_table)) {
         populate_facts(&bag, &rule_table);
-        int out = 0;
-        while (out != -1) {
-            print_bag();
-            out = step(&bag, &rule_table);
-            printf("Matched rule %d...\n", out);
-        /* eval(&bag, &rule_table, 5); */
+
+        if (argc > 2) {
+            if (strcmp(argv[2], "--plast") == 0) {
+                eval(&bag, &rule_table, 5);
+                print_bag();
+            }
         }
-        print_bag();
+        else {
+            int out = 0;
+            while (out != -1) {
+                print_bag();
+                out = step(&bag, &rule_table);
+                printf("Matched rule %d...\n", out);
+            /* eval(&bag, &rule_table, 5); */
+            }
+            print_bag();
+        }
     }
+    else {
+        return 1;
+    }
+    return 0;
 }

@@ -1,7 +1,11 @@
 DONE: separate out parsing functions into separate header
 DONE: better test infra
-TODO: step flag
-TODO: output flag
-TODO: debug compiler flag (https://stackoverflow.com/questions/21272744/why-do-people-use-ifdef-for-feature-flag-tests)
+
+TODO: allow piping stdin into run interpreter
+TODO: variables pass
+
+WAIT: step flag
+WAIT: output flag
+WAIT: debug compiler flag (https://stackoverflow.com/questions/21272744/why-do-people-use-ifdef-for-feature-flag-tests)
 
 

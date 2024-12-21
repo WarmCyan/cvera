@@ -81,7 +81,8 @@ int step(BagOfFacts* bag, RuleTable* rules) {
     return -1;
 }
 
-/* Pass max_steps of -1 to run until halt (no more rules matched) */
+/* Pass max_steps of -1 to run until halt (no more rules matched). Returns the
+ * number of steps taken. */
 /* TODO: it would be neat to count number of times each rule is matched, could
  * allow visualizing a sort of heatmap */
 int eval(BagOfFacts* bag, RuleTable* rules, int max_steps) {

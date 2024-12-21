@@ -149,14 +149,6 @@ static char* walk_rule(char* s, RuleTable* rules) {
 }
 
 
-/* STRT: maybe to get closer to what wryl said about typing being
- * <List<Pair<List<Symbol>, List<Symbol>>> (the implication being that facts are
- * just rules with blank lhs), should parse facts and rules simultaneously, both
- * into the rules table? The data struct is already set up for this to work,
- * just make facts not impact an acc, and instead do a separate loop through the
- * rules table to find empty rule lhs and increment acc there. */
-
-
 static char* walk_fact(char* s, RuleTable* rules) {
     int sym_id;
     int still_parsing = 1;

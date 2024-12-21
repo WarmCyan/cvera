@@ -63,6 +63,7 @@ int main(int argc, char* argv[]) {
 
     int print_last_only = 0; /* --plast */
     int implicit_constants = 1; /* --no-implicit-constants */
+    int max_steps = -1; /* --steps [NUM] */
     int filename_argv_index = -1; /* if never set, expect stdin */
 
     /* cli arg parsing */
@@ -71,6 +72,10 @@ int main(int argc, char* argv[]) {
             print_last_only = 1;
         else if (strcmp(argv[a], "--no-implicit-constants") == 0)
             implicit_constants = 0;
+        else if (strcmp(argv[a], "--steps") == 0) {
+            a++;
+            walk_number(argv[a], &max_steps);
+        }
         else
             filename_argv_index = a;
         a++;
@@ -95,7 +100,7 @@ int main(int argc, char* argv[]) {
         populate_facts(&bag, &rule_table);
 
         if (print_last_only) {
-            eval(&bag, &rule_table, 5);
+            eval(&bag, &rule_table, max_steps);
             print_bag();
         }
         else {

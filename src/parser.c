@@ -82,7 +82,7 @@ int index_of_symbol(char* s, SymTable* syms) {
 
 /* walk to the end of a multiplicity/constant number, filling the passed count
  * int with the parsed number's value */
-static char* walk_number(char* s, int* count) {
+char* walk_number(char* s, int* count) {
     int value = 0;
     s = walk_whitespace(s + 1); /* we're at a ':', so +1 skips that to check for any ws afterwards */
     while (*s && *s >= '0' && *s <= '9') {

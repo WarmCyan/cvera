@@ -69,6 +69,10 @@ int compare_symbols(char* a, char* b);
 /* find ID of symbol in a symbols table */
 int index_of_symbol(char* s, SymTable* syms);
 
+/* walk to the end of a multiplicity/constant number, filling the passed count
+ * int with the parsed number's value */
+char* walk_number(char* s, int* count);
+
 /* implicit_constants_pass of 1 means we automatically transcribe any 'x:NUM' symbols
  * into correct counts, without generating separate rules to do so. */
 int parse(char* s, RuleTable* rules, int implicit_constants_pass);

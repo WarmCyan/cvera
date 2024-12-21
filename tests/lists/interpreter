@@ -45,3 +45,11 @@ wash dishes
 sweep floors
 get groceries
 feed pets
+==================================================
+bin/run tests/multiplicity.vera --plast --no-implicit-constants
+--------------------------------------------------
+x:2
+==================================================
+bin/run tests/multiplicity.vera --plast --steps 1
+--------------------------------------------------
+x:10

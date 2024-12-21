@@ -83,7 +83,7 @@ void add_move_a_to_b_rules(int sym_a_index, int sym_b_index, RuleTable* rules, i
     int movement_sym_index = -1;
     int i; /* symbol index */
     for (i = 0; i < rules->syms->len; i++) {
-        if (compare_syms_concat_separator_symbol(rules->syms->table[sym_a_index], rules->syms->table[sym_b_index], " -> ", rules->syms-fktable[i])) {
+        if (compare_syms_concat_separator_symbol(rules->syms->table[sym_a_index], rules->syms->table[sym_b_index], " -> ", rules->syms->table[i])) {
             movement_sym_index = i;
         }
     }
@@ -163,7 +163,7 @@ void run_variables_pass(RuleTable* rules, int force_all_rules) {
         for (j = 0; j < vars_index; j++) {
             /* doesn't make sense to add a -> a rules... */
             if (i == j) continue;
-            add_move_a_to_b_rules(variable_symbols[i], variable_symbols[j], " -> ", force_all_rules);
+            add_move_a_to_b_rules(variable_symbols[i], variable_symbols[j], rules, force_all_rules);
         }
     }
 }

@@ -13,6 +13,7 @@ WITH REGARD TO THIS SOFTWARE.
 #include <stdio.h>
 #include <string.h>
 #include "parser.h"
+#include "variables_pass.h"
 
 #define SRC_SZ 32768 /* maximum size of input vera source code */
 #define NAM_SZ 32768 /* maximum combined text size of all symbol names? */
@@ -107,6 +108,8 @@ int main(int argc, char* argv[]) {
     int print_symbols = 0; /* --psymbols */
     int print_rules = 0; /* --prules */
     int implicit_constants = 1; /* --no-implicit-constants */
+    int vars_pass = 0; /* --vars */
+    int vars_force = 0; /* --force */
     int filename_argv_index = -1; /* if never set, expect stdin */
 
     /* cli arg parsing */
@@ -117,6 +120,10 @@ int main(int argc, char* argv[]) {
             print_rules = 1;
         else if (strcmp(argv[a], "--no-implicit-constants") == 0)
             implicit_constants = 0;
+        else if (strcmp(argv[a], "--vars") == 0)
+            vars_pass = 1;
+        else if (strcmp(argv[a], "--force") == 0)
+            vars_force = 1;
         else
             filename_argv_index = a;
         a++;
@@ -138,6 +145,9 @@ int main(int argc, char* argv[]) {
     }
 
     if(parse(src, &rule_table, implicit_constants)) {
+        if (vars_pass) {
+            run_variables_pass(&rule_table, vars_force);
+        }
         if (print_symbols)
             print_all_symbols();
         if (print_rules)

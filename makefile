@@ -26,10 +26,14 @@ tests/splits/parser: tests/lists/parser
 tests/splits/interpreter: tests/lists/interpreter
 	@-rm -rf tests/splits/interpreter
 	tests/split interpreter
+	
+tests/splits/variables: tests/lists/variables
+	@-rm -rf tests/splits/variables
+	tests/split variables
 
-bin/tester: src/parser.c src/parser.h src/tester.c
+bin/tester: src/parser.c src/parser.h src/tester.c src/variables_pass.h src/variables_pass.c
 	@mkdir -p bin
-	${CC} src/tester.c src/parser.c -o bin/tester
+	${CC} src/tester.c src/parser.c src/variables_pass.c -o bin/tester
 
 bin/run: src/run.c src/interpreter.h src/interpreter.c src/parser.c src/parser.h
 	@mkdir -p bin
@@ -45,7 +49,7 @@ test: bin/run bin/tester ## run a single example test to see parser output
 	cat tests/multiplicity.vera | bin/run --steps 1 --plast
 
 .PHONY: tests
-tests: bin/tester bin/run tests/splits/parser tests/splits/interpreter ## run and report on all tests
+tests: bin/tester bin/run bin/variables tests/splits/parser tests/splits/interpreter tests/splits/variables ## run and report on all tests
 	@tests/run_tests -v
 
 # .PHONY: tests-verbose

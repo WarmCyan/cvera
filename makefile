@@ -27,9 +27,14 @@ bin/tester: src/parser.c src/parser.h src/tester.c
 	@mkdir -p bin
 	${CC} src/tester.c src/parser.c -o bin/tester
 
+bin/run: src/run.c src/interpreter.h src/interpreter.c src/parser.c src/parser.h
+	@mkdir -p bin
+	${CC} src/run.c src/parser.c src/interpreter.c -o bin/run
+	
 .PHONY: test
-test: bin/tester ## run a single example test to see parser output
+test: bin/run bin/tester ## run a single example test to see parser output
 	exec bin/tester tests/intro.vera --prules
+	exec bin/run tests/intro.vera
 
 .PHONY: tests
 tests: bin/tester tests/splits/parser ## run and report on all tests

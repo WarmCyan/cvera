@@ -14,6 +14,9 @@ WITH REGARD TO THIS SOFTWARE.
  * rule and symbol tables, tracking the counts of symbols involved on rule
  * LHS/RHS */
 
+#ifndef PARSER_H
+#define PARSER_H
+
 /* ----------------------------------------------
 Table relating internal symbols as pointers to where their string names are,
 so if source is "apple, some fruit":
@@ -67,3 +70,5 @@ int compare_symbols(char* a, char* b);
 int index_of_symbol(char* s, SymTable* syms);
 
 int parse(char* s, RuleTable* rules);
+
+#endif

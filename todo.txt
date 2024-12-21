@@ -2,6 +2,7 @@ DONE: separate out parsing functions into separate header
 DONE: better test infra
 DONE: allow piping stdin into run interpreter
 
+STRT: symbol ':' multiplicity syntax (constants)
 TODO: variables pass
 TODO: repl
 

@@ -103,23 +103,45 @@ print_all_rules() {
 int main(int argc, char* argv[]) {
     FILE *f;
     int a = 1;
-    if(argc < 2)
-        return !printf(
-                "Vera, 6 Dec 2024.\nusage: vera input.vera\n");
-    if(!(f = fopen(argv[a], "r")))
-        return !printf("Source missing: %s\n", argv[a]);
-    if(!fread(&src, 1, SRC_SZ, f))
-        return !printf("Source empty: %s\n", argv[a]);
 
-    if(parse(src, &rule_table)) {
-        if (argc > 2) {
-            if (strcmp(argv[2], "--psymbols") == 0) {
-                print_all_symbols();
-            }
-            if (strcmp(argv[2], "--prules") == 0) {
-                print_all_rules();
-            }
-        }
+    int print_symbols = 0; /* --psymbols */
+    int print_rules = 0; /* --prules */
+    int implicit_constants = 1; /* --no-implicit-constants */
+    int filename_argv_index = -1; /* if never set, expect stdin */
+
+    /* cli arg parsing */
+    while (a < argc) {
+        if (strcmp(argv[a], "--psymbols") == 0)
+            print_symbols = 1;
+        else if (strcmp(argv[a], "--prules") == 0)
+            print_rules = 1;
+        else if (strcmp(argv[a], "--no-implicit-constants") == 0)
+            implicit_constants = 0;
+        else
+            filename_argv_index = a;
+        a++;
+    }
+    
+    /* grab source code from correct source */
+    if (filename_argv_index > -1) {
+        /* open and read in the source file */
+        if(!(f = fopen(argv[filename_argv_index], "r")))
+            return !printf("Source missing: %s\n", argv[a]);
+        if(!fread(&src, 1, SRC_SZ, f))
+            return !printf("Source empty: %s\n", argv[a]);
+    }
+    else {
+        /* read source code from stdin */
+        /* NOTE: if you aren't piping anything in, you can just enter code and
+         * use ctrl+D to term */
+        fread(&src, 1, SRC_SZ, stdin);
+    }
+
+    if(parse(src, &rule_table, implicit_constants)) {
+        if (print_symbols)
+            print_all_symbols();
+        if (print_rules)
+            print_all_rules();
     }
     else {
         return 1;

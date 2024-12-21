@@ -15,6 +15,7 @@ WITH REGARD TO THIS SOFTWARE.
 
 
 static char delim; /* the spacer glyph delimiter, conventionally '|' */
+static int parse_constants; /* whether to automatically handle x:100 type multiplicity syntax */
 
 /* iterate the pointer until we find the first non-whitespace character */ 
 static char* walk_whitespace(char* s) {
@@ -45,7 +46,7 @@ static void trim(char** s) {
 int compare_symbols(char* a, char* b) {
     while (*a && *b) {
         /* stop when we've reached the end of one of the symbols */
-        if ((*a == ',' || *a == delim) && !*b) break;
+        if ((*a == ',' || *a == delim || (*a == ':' && parse_constants)) && !*b) break;
         /* obviously if they don't equal, stop! */
         if (*a != *b) break;
         /* we don't care about differing amounts of whitespace within symbols,
@@ -65,7 +66,7 @@ int compare_symbols(char* a, char* b) {
      * comparison between a symbol and a longer symbol with the same prefix and
      * a space, e.g.: "Nova", "Nova and other stuff" */
     a = walk_whitespace(a);
-    return !*b && (*a == ',' || *a == delim || *a <= 0x20);
+    return !*b && (*a == ',' || *a == delim || *a <= 0x20 || (*a == ':' && parse_constants));
 }
 
 /* find ID of symbol in a symbols table */
@@ -79,35 +80,60 @@ int index_of_symbol(char* s, SymTable* syms) {
     return -1;
 }
 
+/* walk to the end of a multiplicity/constant number, filling the passed count
+ * int with the parsed number's value */
+static char* walk_number(char* s, int* count) {
+    int value = 0;
+    s = walk_whitespace(s + 1); /* we're at a ':', so +1 skips that to check for any ws afterwards */
+    while (*s && *s >= '0' && *s <= '9') {
+        /* clever way to compute the value represented in base 10 ascii
+         * characters, nice! */
+        value *= 10; /* we found another digit so the previous was an order of magnitude greater */
+        value += *s - '0'; /* increment as a 1's column the current digit, the - '0' is because of place in ascii table, norm to 0. */
+        s++;
+    }
+    *count = value;
+    return s;
+}
+
 /* walk to the end of the next symbol, adding it to the symbol table if it
- * hasn't been seen before. (and store the index to that symbol) */ 
-static char* walk_symbol(char* s, int* id, SymTable* syms) {
+ * hasn't been seen before. (and store the index to that symbol, as well as
+ * count if we're handling constants) */ 
+static char* walk_symbol(char* s, int* id, SymTable* syms, int* count) {
     s = walk_whitespace(s);
     *id = index_of_symbol(s, syms);
     if (*id > -1) {
         /* we've seen this symbol before, so just walk to the end of it 
-         * (when we see a delimiter or end of fact syntax) */
-        while (s[0] && s[0] != delim && s[0] != ',') s++;
+         * (when we see a delimiter or end of fact syntax, or start of a number) */
+        while (s[0] && s[0] != delim && s[0] != ',' && (s[0] != ':' || !parse_constants)) {
+            s++;
+        }
+        /* handle implicit constants if applicable and we see the ':' syntax */
+        if (s[0] == ':' && parse_constants) {
+            s = walk_number(s, count);
+        }
         return s;
     }
-    
+
     /* new symbol found! Woo! */
     /* assign the next symbol in the symbols table to the current position of
      * the symbol names string. */
     syms->table[syms->len] = &(syms->names[syms->names_len]);
     syms->len = syms->len + 1;
     /* write the symbol string to the names array */
-    while (s[0] && s[0] != delim && s[0] != ',') {
+    while (s[0] && s[0] != delim && s[0] != ',' && (s[0] != ':' || !parse_constants)) {
         syms->names[syms->names_len] = s[0];
         syms->names_len++;
         /* skip anything more than one whitespace. TODO: should eventually be
          * sep pass */
         if (*s == ' ') {
             s = walk_whitespace(s) - 1;
-            /* syms->names[syms->names_len] = ' '; */
-            /* syms->names_len++; */
         }
         *s++;
+    }
+    /* handle implicit constants if applicable and we see the ':' syntax */
+    if (s[0] == ':' && parse_constants) {
+        s = walk_number(s, count);
     }
     syms->names_len++; /* increment once more to ensure a null term between names */
     /* trim any whitespace off the end TODO: this should eventually be sep 
@@ -119,11 +145,12 @@ static char* walk_symbol(char* s, int* id, SymTable* syms) {
 
 static char* walk_rule(char* s, RuleTable* rules) {
     int sym_id; /* used to track symbol count */
+    int count = 1; /* number to add for walked symbol if we're parsing implicit constants */
     int still_parsing_side = 1;
     /* process left-hand side, the rule condition. */
     while(still_parsing_side) {
-        s = walk_symbol(s, &sym_id, rules->syms);
-        rules->table[rules->len * rules->syms->max_len * 2 + sym_id]++;
+        s = walk_symbol(s, &sym_id, rules->syms, &count);
+        rules->table[rules->len * rules->syms->max_len * 2 + sym_id] += count;
         if (s[0] == ',') 
             s++;
         else 
@@ -137,8 +164,8 @@ static char* walk_rule(char* s, RuleTable* rules) {
     s = walk_whitespace(s);
     still_parsing_side = (s[0] && s[0] != delim);
     while (still_parsing_side) {
-        s = walk_symbol(s, &sym_id, rules->syms);
-        rules->table[rules->len * rules->syms->max_len * 2 + sym_id + rules->syms->max_len]++;
+        s = walk_symbol(s, &sym_id, rules->syms, &count);
+        rules->table[rules->len * rules->syms->max_len * 2 + sym_id + rules->syms->max_len] += count;
         if (s[0] == ',')
             s++;
         else
@@ -151,10 +178,11 @@ static char* walk_rule(char* s, RuleTable* rules) {
 
 static char* walk_fact(char* s, RuleTable* rules) {
     int sym_id;
+    int count = 1; /* number to add for walked symbol if we're parsing implicit constants */
     int still_parsing = 1;
     while (still_parsing) {
-        s = walk_symbol(s, &sym_id, rules->syms);
-        rules->table[rules->len * rules->syms->max_len * 2 + sym_id + rules->syms->max_len]++; /* TODO: this is what is breaking */
+        s = walk_symbol(s, &sym_id, rules->syms, &count);
+        rules->table[rules->len * rules->syms->max_len * 2 + sym_id + rules->syms->max_len] += count;
         if (s[0] == ',')
             s++;
         else
@@ -164,12 +192,15 @@ static char* walk_fact(char* s, RuleTable* rules) {
     return s;
 }
 
-int parse(char* s, RuleTable* rules) {
+/* implicit_constants_pass of 1 means we automatically transcribe any 'x:NUM' symbols
+ * into correct counts, without generating separate rules to do so. */
+int parse(char* s, RuleTable* rules, int implicit_constants_pass) {
     /* the rule delimiter is the first character in the source.
      * conventionally '|', but can be anything.
      * (spacer glyph is the terminology used in
      * https://wiki.xxiivv.com/site/vera.html) */
     delim = s[0];
+    parse_constants = implicit_constants_pass;
     s = walk_whitespace(s);
     while (s[0]) {
         s = walk_whitespace(s);

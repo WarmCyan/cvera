@@ -62,17 +62,21 @@ int main(int argc, char* argv[]) {
     int a = 1;
 
     int print_last_only = 0; /* --plast */
+    int implicit_constants = 1; /* --no-implicit-constants */
     int filename_argv_index = -1; /* if never set, expect stdin */
 
     /* cli arg parsing */
     while (a < argc) {
         if (strcmp(argv[a], "--plast") == 0)
             print_last_only = 1;
+        else if (strcmp(argv[a], "--no-implicit-constants") == 0)
+            implicit_constants = 0;
         else
             filename_argv_index = a;
         a++;
     }
 
+    /* grab source code from correct source */
     if (filename_argv_index > -1) {
         /* open and read in the source file */
         if(!(f = fopen(argv[filename_argv_index], "r")))
@@ -81,11 +85,13 @@ int main(int argc, char* argv[]) {
             return !printf("Source empty: %s\n", argv[a]);
     }
     else {
-        /* TODO: read from stdin */
+        /* read source code from stdin */
+        /* NOTE: if you aren't piping anything in, you can just enter code and
+         * use ctrl+D to term */
         fread(&src, 1, SRC_SZ, stdin);
     }
 
-    if(parse(src, &rule_table)) {
+    if(parse(src, &rule_table, implicit_constants)) {
         populate_facts(&bag, &rule_table);
 
         if (print_last_only) {

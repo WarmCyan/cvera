@@ -28,6 +28,12 @@ just with a blank left hand side. In principle, this should mean that
 "printing"/dumping out the rules table should output semantically equivalent
 vera code to what was input.
 
+the interpreter (`bin/run`) can either execute on a passed file containing vera
+source code, or it can be piped in via stdin.
+
+An implicit constants pass is handled in the parser for any `x:50` syntax,
+disable by running with `--no-implicit-constants`
+
 ## Running/testing
 
 If you want to use the cosmopolitan compiler, first run

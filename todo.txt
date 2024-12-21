@@ -1,10 +1,11 @@
 DONE: separate out parsing functions into separate header
 DONE: better test infra
 DONE: allow piping stdin into run interpreter
+DONE: symbol ':' multiplicity syntax (constants)
 
-STRT: symbol ':' multiplicity syntax (constants)
-TODO: variables pass
+STRT: variables pass
 TODO: repl
+TODO: compile to c
 
 WAIT: step flag
 WAIT: output flag

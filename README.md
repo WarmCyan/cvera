@@ -34,6 +34,42 @@ source code, or it can be piped in via stdin.
 An implicit constants pass is handled in the parser for any `x:50` syntax,
 disable by running with `--no-implicit-constants`
 
+I've implemented half of a variables annotation pass, it adds the rules for the
+destructive movement form `a -> b`, I still need to add `a = b`.
+
+
+## Bin files
+
+Use `make build` to produce these:
+
+* `bin/tester` - this is effectively a debugger for the parser, pipe or load any
+  vera code with this and use `--psymbols` to print out the symbols table, and
+  `--prules` to print out the rules list (should be semantically equivalent code
+  to what was input) from the parser.
+* `bin/run` - a vera interpreter, pipe or load vera code and it will run through
+  it step by step. Use `--plast` to only print out the final symbols in the
+  accumulator, or don't to see the bag at each step.
+* `bin/variables` - a variables compiler pass, turns a `|#| variables, ...`
+  annotation into the appropriate rule set and prints it to stdout. This means
+  you can use it as part of a piped chain into the interpreter, e.g.:
+
+```bash
+cat tests/vars.vera | bin/variables | bin/run
+```
+
+## Passes
+
+* Whitespace trimming is currently forced, unconfigurable, and first in
+  any/every parsing chain
+* Constants (`x:50` syntax) are implicitly parsed, but this is optional,
+  `bin/tester` and `bin/run` both take a `--no-implicit-constants` flag to
+  disable
+* A variables (`|#| variables, a, b`, `a -> b`) pass can optionally be run,
+  either by directly transforming vera code via the discrete `bin/variables`
+  command (see example snippet above under bin files) or by specifying the
+  `--vars` flag for either `bin/tester` or `bin/run`. (Note that only `a -> b`
+  syntax rules have been added, not `a = b`, yet)
+
 ## Running/testing
 
 If you want to use the cosmopolitan compiler, first run

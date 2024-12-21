@@ -17,6 +17,9 @@ cosmocc: ## grab and set up the cosmopolitan toolchain (use make [...] CC=cc if 
 	cd cosmocc && wget https://cosmo.zip/pub/cosmocc/cosmocc.zip
 	cd cosmocc && unzip cosmocc.zip
 	rm cosmocc/cosmocc.zip
+	
+.PHONY: build
+build: bin/tester bin/run bin/variables ## compile all the runnable things
 
 # TODO: use fancy makefile vars to automate for any lists
 tests/splits/parser: tests/lists/parser
@@ -49,15 +52,12 @@ test: bin/run bin/tester ## run a single example test to see parser output
 	cat tests/multiplicity.vera | bin/run --steps 1 --plast
 
 .PHONY: tests
-tests: bin/tester bin/run bin/variables tests/splits/parser tests/splits/interpreter tests/splits/variables ## run and report on all tests
+tests: build tests/splits/parser tests/splits/interpreter tests/splits/variables ## run and report on all tests
 	@tests/run_tests -v
 
 # .PHONY: tests-verbose
 # tests-verbose: bin/tester tests/splits/parser ## run and report on all tests
 # 	@tests/run_tests -v
-
-# .PHONY: build
-# build: bin/vera ## run all compiliation steps
 
 # bin/vera: bin src/vera.c ## compile the vera interpreter
 # 	mkdir -p bin

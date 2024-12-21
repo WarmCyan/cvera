@@ -28,9 +28,6 @@ just with a blank left hand side. In principle, this should mean that
 "printing"/dumping out the rules table should output semantically equivalent
 vera code to what was input.
 
-I haven't yet re-implemented actual evaluation, so this codebase only parses
-vera code so far.
-
 ## Running/testing
 
 If you want to use the cosmopolitan compiler, first run

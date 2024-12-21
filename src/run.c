@@ -60,22 +60,37 @@ static void print_bag() {
 int main(int argc, char* argv[]) {
     FILE *f;
     int a = 1;
-    if(argc < 2)
-        return !printf(
-                "Vera, 6 Dec 2024.\nusage: vera input.vera\n");
-    if(!(f = fopen(argv[a], "r")))
-        return !printf("Source missing: %s\n", argv[a]);
-    if(!fread(&src, 1, SRC_SZ, f))
-        return !printf("Source empty: %s\n", argv[a]);
+
+    int print_last_only = 0; /* --plast */
+    int filename_argv_index = -1; /* if never set, expect stdin */
+
+    /* cli arg parsing */
+    while (a < argc) {
+        if (strcmp(argv[a], "--plast") == 0)
+            print_last_only = 1;
+        else
+            filename_argv_index = a;
+        a++;
+    }
+
+    if (filename_argv_index > -1) {
+        /* open and read in the source file */
+        if(!(f = fopen(argv[filename_argv_index], "r")))
+            return !printf("Source missing: %s\n", argv[a]);
+        if(!fread(&src, 1, SRC_SZ, f))
+            return !printf("Source empty: %s\n", argv[a]);
+    }
+    else {
+        /* TODO: read from stdin */
+        fread(&src, 1, SRC_SZ, stdin);
+    }
 
     if(parse(src, &rule_table)) {
         populate_facts(&bag, &rule_table);
 
-        if (argc > 2) {
-            if (strcmp(argv[2], "--plast") == 0) {
-                eval(&bag, &rule_table, 5);
-                print_bag();
-            }
+        if (print_last_only) {
+            eval(&bag, &rule_table, 5);
+            print_bag();
         }
         else {
             int out = 0;
@@ -83,7 +98,6 @@ int main(int argc, char* argv[]) {
                 print_bag();
                 out = step(&bag, &rule_table);
                 printf("Matched rule %d...\n", out);
-            /* eval(&bag, &rule_table, 5); */
             }
             print_bag();
         }

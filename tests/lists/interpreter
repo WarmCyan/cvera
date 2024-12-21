@@ -19,3 +19,29 @@ wash dishes
 sweep floors
 get groceries
 feed pets
+==================================================
+echo "||hello world" | bin/run --plast
+--------------------------------------------------
+hello world
+==================================================
+cat tests/intro.vera | bin/run --plast
+--------------------------------------------------
+The first character in a file assigns a spacer glyph.
+A program is made of rules and facts.
+Two spacers indicate the creation of facts
+Facts are separated by commas
+a warm fire
+a box
+==================================================
+cat tests/salad.vera | bin/run --plast
+--------------------------------------------------
+fruit cake
+==================================================
+cat tests/hello.vera | bin/run --plast
+--------------------------------------------------
+a log
+the door is open
+wash dishes
+sweep floors
+get groceries
+feed pets

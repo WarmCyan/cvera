@@ -38,7 +38,7 @@ bin/run: src/run.c src/interpreter.h src/interpreter.c src/parser.c src/parser.h
 .PHONY: test
 test: bin/run bin/tester ## run a single example test to see parser output
 	exec bin/tester tests/intro.vera --prules
-	exec bin/run tests/intro.vera --plast
+	cat tests/intro.vera | bin/run --plast
 
 .PHONY: tests
 tests: bin/tester bin/run tests/splits/parser tests/splits/interpreter ## run and report on all tests

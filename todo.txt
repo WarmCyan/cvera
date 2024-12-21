@@ -1,8 +1,9 @@
 DONE: separate out parsing functions into separate header
 DONE: better test infra
+DONE: allow piping stdin into run interpreter
 
-TODO: allow piping stdin into run interpreter
 TODO: variables pass
+TODO: repl
 
 WAIT: step flag
 WAIT: output flag

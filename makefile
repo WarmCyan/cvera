@@ -38,9 +38,9 @@ bin/tester: src/parser.c src/parser.h src/tester.c src/variables_pass.h src/vari
 	@mkdir -p bin
 	${CC} src/tester.c src/parser.c src/variables_pass.c -o bin/tester
 
-bin/run: src/run.c src/interpreter.h src/interpreter.c src/parser.c src/parser.h
+bin/run: src/run.c src/interpreter.h src/interpreter.c src/parser.c src/parser.h src/variables_pass.h src/variables_pass.c
 	@mkdir -p bin
-	${CC} src/run.c src/parser.c src/interpreter.c -o bin/run
+	${CC} src/run.c src/parser.c src/interpreter.c src/variables_pass.c -o bin/run
 
 bin/variables: src/variables.c src/parser.c src/parser.h src/variables_pass.h src/variables_pass.c
 	@mkdir -p bin

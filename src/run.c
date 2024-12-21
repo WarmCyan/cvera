@@ -14,6 +14,7 @@ WITH REGARD TO THIS SOFTWARE.
 #include <string.h>
 #include "parser.h"
 #include "interpreter.h"
+#include "variables_pass.h"
 
 #define SRC_SZ 32768 /* maximum size of input vera source code */
 #define NAM_SZ 32768 /* maximum combined text size of all symbol names? */
@@ -64,6 +65,7 @@ int main(int argc, char* argv[]) {
     int print_last_only = 0; /* --plast */
     int implicit_constants = 1; /* --no-implicit-constants */
     int max_steps = -1; /* --steps [NUM] */
+    int vars_pass = 0; /* --vars */
     int filename_argv_index = -1; /* if never set, expect stdin */
 
     /* cli arg parsing */
@@ -76,6 +78,8 @@ int main(int argc, char* argv[]) {
             a++;
             walk_number(argv[a], &max_steps);
         }
+        else if (strcmp(argv[a], "--vars") == 0)
+            vars_pass = 1;
         else
             filename_argv_index = a;
         a++;
@@ -97,6 +101,9 @@ int main(int argc, char* argv[]) {
     }
 
     if(parse(src, &rule_table, implicit_constants)) {
+        if (vars_pass) {
+            run_variables_pass(&rule_table, 0);
+        }
         populate_facts(&bag, &rule_table);
 
         if (print_last_only) {

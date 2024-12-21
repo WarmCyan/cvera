@@ -48,7 +48,8 @@ Use `make build` to produce these:
   to what was input) from the parser.
 * `bin/run` - a vera interpreter, pipe or load vera code and it will run through
   it step by step. Use `--plast` to only print out the final symbols in the
-  accumulator, or don't to see the bag at each step.
+  accumulator, or don't to see the bag at each step. Specify `--steps NUM` to
+  set a maximum number of steps to evaluate.
 * `bin/variables` - a variables compiler pass, turns a `|#| variables, ...`
   annotation into the appropriate rule set and prints it to stdout. This means
   you can use it as part of a piped chain into the interpreter, e.g.:

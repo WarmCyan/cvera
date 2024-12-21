@@ -105,10 +105,12 @@ int main(int argc, char* argv[]) {
         }
         else {
             int out = 0;
-            while (out != -1) {
+            int steps_to_take = max_steps;
+            while (out != -1 && (max_steps == -1 || steps_to_take > 0)) {
                 print_bag();
                 out = step(&bag, &rule_table);
                 printf("Matched rule %d...\n", out);
+                steps_to_take -= 1;
             }
             print_bag();
         }

@@ -84,7 +84,7 @@ int index_of_symbol(char* s, SymTable* syms) {
  * int with the parsed number's value */
 char* walk_number(char* s, int* count) {
     int value = 0;
-    s = walk_whitespace(s + 1); /* we're at a ':', so +1 skips that to check for any ws afterwards */
+    s = walk_whitespace(s);
     while (*s && *s >= '0' && *s <= '9') {
         /* clever way to compute the value represented in base 10 ascii
          * characters, nice! */
@@ -110,7 +110,7 @@ static char* walk_symbol(char* s, int* id, SymTable* syms, int* count) {
         }
         /* handle implicit constants if applicable and we see the ':' syntax */
         if (s[0] == ':' && parse_constants) {
-            s = walk_number(s, count);
+            s = walk_number(s + 1, count); /* we're at a ':', so +1 skips that to check for any ws afterwards */
         }
         return s;
     }
@@ -133,7 +133,7 @@ static char* walk_symbol(char* s, int* id, SymTable* syms, int* count) {
     }
     /* handle implicit constants if applicable and we see the ':' syntax */
     if (s[0] == ':' && parse_constants) {
-        s = walk_number(s, count);
+        s = walk_number(s + 1, count); /* we're at a ':', so +1 skips that to check for any ws afterwards */
     }
     syms->names_len++; /* increment once more to ensure a null term between names */
     /* trim any whitespace off the end TODO: this should eventually be sep 

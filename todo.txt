@@ -5,8 +5,10 @@ DONE: symbol ':' multiplicity syntax (constants)
 
 STRT: variables pass
 TODO: repl
-STRT: compile to c
+DONE: compile to c
 TODO: dead code pass
+TODO: make a snek game!
+TODO: cleanup the godawful mess that is the compile_to_c function
 
 WAIT: step flag
 WAIT: output flag

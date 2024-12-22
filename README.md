@@ -37,6 +37,9 @@ disable by running with `--no-implicit-constants`
 I've implemented half of a variables annotation pass, it adds the rules for the
 destructive movement form `a -> b`, I still need to add `a = b`.
 
+A basic vera to C compiler is available which transpiles input vera code into C.
+The output code can optionally be compiled with the `-DDEBUG` flag to make a
+runnable that prints out the end state accumulator.
 
 ## Bin files
 
@@ -53,6 +56,9 @@ Use `make build` to produce these:
 * `bin/variables` - a variables compiler pass, turns a `|#| variables, ...`
   annotation into the appropriate rule set and prints it to stdout. This means
   you can use it as part of a piped chain into the interpreter, e.g.:
+* `bin/compile` - a vera to c compiler, turns stdin vera code or passed vera
+  source file into a string of C code. Compile the results with `gcc` or
+  similar. (run `make generated/salad` for an example)
 
 ```bash
 cat tests/vars.vera | bin/variables | bin/run

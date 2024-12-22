@@ -10,7 +10,7 @@ clean: ## remove everything in the bin folder, start fresh!
 	rm -rf tests/splits
 	rm -rf tests/runs
 	rm -rf tests/outs
-	rm -rf tests/generated
+	rm -rf generated
 
 # https://justine.lol/cosmopolitan/
 cosmocc: ## grab and set up the cosmopolitan toolchain (use make [...] CC=cc if you don't want to use)

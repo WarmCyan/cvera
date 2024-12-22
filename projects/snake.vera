@@ -10,7 +10,7 @@
     <render_snek
 
 |<clear_screen, <find_term_size, <prepare_frame_timer, <prepare_term_for_input, <generate_food, <render_boundaries, <render_snek| frame_rendered, running
-|<render_snek, running| frame_rendered
+|<render_snek, <clear_last_tail, running| frame_rendered, running
 
 
 |<check_food, >food_get_happy_snek| embiggen_snek, <generate_food

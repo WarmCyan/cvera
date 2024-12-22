@@ -15,7 +15,7 @@
 #define SNAKE_COLOR_BG 42
 #define FOOD_COLOR_FG 33
 
-#define MSEC_PER_FRAME 1000
+#define MSEC_PER_FRAME 100
 
 static char cells[MAX_H][MAX_W];
 static int term_w, term_h;
@@ -30,12 +30,12 @@ static struct termios original_term_attrs;
 
 void printout() {
 	if (snek_right) printf("snek_right ");
-	if (snek_x) printf("snek_x ");
-	if (snek_y) printf("snek_y ");
-	if (snek_bigness) printf("snek_bigness ");
+	/* if (snek_x) printf("snek_x "); */
+	/* if (snek_y) printf("snek_y "); */
+	/* if (snek_bigness) printf("snek_bigness "); */
 	if (setup) printf("setup ");
-	if (snek_tail_x) printf("snek_tail_x ");
-	if (snek_tail_y) printf("snek_tail_y ");
+	/* if (snek_tail_x) printf("snek_tail_x "); */
+	/* if (snek_tail_y) printf("snek_tail_y "); */
 	if (_o_clear_screen) printf("_o_clear_screen ");
 	if (_o_find_term_size) printf("_o_find_term_size ");
 	if (_o_prepare_frame_timer) printf("_o_prepare_frame_timer ");

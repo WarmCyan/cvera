@@ -56,13 +56,13 @@ Use `make build` to produce these:
 * `bin/variables` - a variables compiler pass, turns a `|#| variables, ...`
   annotation into the appropriate rule set and prints it to stdout. This means
   you can use it as part of a piped chain into the interpreter, e.g.:
+```bash
+cat tests/vars.vera | bin/variables | bin/run
+```
 * `bin/compile` - a vera to c compiler, turns stdin vera code or passed vera
   source file into a string of C code. Compile the results with `gcc` or
   similar. (run `make generated/salad` for an example)
 
-```bash
-cat tests/vars.vera | bin/variables | bin/run
-```
 
 ## Passes
 

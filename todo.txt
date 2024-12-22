@@ -6,6 +6,7 @@ DONE: symbol ':' multiplicity syntax (constants)
 STRT: variables pass
 TODO: repl
 STRT: compile to c
+TODO: dead code pass
 
 WAIT: step flag
 WAIT: output flag

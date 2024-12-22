@@ -1,0 +1,268 @@
+bin/compile tests/salad.vera
+--------------------------------------------------
+#define MIN(x, y) (((x) < (y)) ? (x) : (y))
+
+static int sugar = 1;
+static int oranges = 1;
+static int apples = 2;
+static int cherries = 1;
+static int flour = 1;
+static int apple_cake = 0;
+static int fruit_salad = 0;
+static int fruit_cake = 0;
+
+int executions = 0;
+
+int step() {
+	if (sugar && apples && flour) {
+		executions = MIN(MIN(sugar, apples), flour);
+		sugar -= executions;
+		apples -= executions;
+		flour -= executions;
+		apple_cake += executions;
+		return 0;
+	}
+	else if (oranges && apples && cherries) {
+		executions = MIN(MIN(oranges, apples), cherries);
+		oranges -= executions;
+		apples -= executions;
+		cherries -= executions;
+		fruit_salad += executions;
+		return 1;
+	}
+	else if (apple_cake && fruit_salad) {
+		executions = MIN(apple_cake, fruit_salad);
+		apple_cake -= executions;
+		fruit_salad -= executions;
+		fruit_cake += executions;
+		return 2;
+	}
+	return -1;
+}
+
+void eval() {
+	int out = 0;
+	while (out != -1) {
+		out = step();
+	}
+}
+
+#ifdef DEBUG
+
+#include <stdio.h>
+
+void printout() {
+	printf("%d,", sugar);
+	printf("%d,", oranges);
+	printf("%d,", apples);
+	printf("%d,", cherries);
+	printf("%d,", flour);
+	printf("%d,", apple_cake);
+	printf("%d,", fruit_salad);
+	printf("%d,", fruit_cake);
+	printf("\n");
+}
+
+int main() {
+	eval();
+	printout();
+}
+
+#endif
+
+==================================================
+bin/compile tests/multiplicity2.vera
+--------------------------------------------------
+#define MIN(x, y) (((x) < (y)) ? (x) : (y))
+
+static int a = 5;
+static int b = 4;
+static int c = 0;
+
+int executions = 0;
+
+int step() {
+	if (a && b) {
+		executions = MIN(a, b);
+		a -= executions;
+		b -= executions;
+		c += executions;
+		return 0;
+	}
+	return -1;
+}
+
+void eval() {
+	int out = 0;
+	while (out != -1) {
+		out = step();
+	}
+}
+
+#ifdef DEBUG
+
+#include <stdio.h>
+
+void printout() {
+	printf("%d,", a);
+	printf("%d,", b);
+	printf("%d,", c);
+	printf("\n");
+}
+
+int main() {
+	eval();
+	printout();
+}
+
+#endif
+
+==================================================
+bin/compile tests/vars.vera
+--------------------------------------------------
+#define MIN(x, y) (((x) < (y)) ? (x) : (y))
+
+static int __ = 0;
+static int variables = 0;
+static int a = 5;
+static int b = 0;
+static int a_to_b = 1;
+
+int executions = 0;
+
+int step() {
+	if (__) {
+		executions = __;
+		__ -= executions;
+		variables += executions;
+		a += executions;
+		b += executions;
+		return 0;
+	}
+	return -1;
+}
+
+void eval() {
+	int out = 0;
+	while (out != -1) {
+		out = step();
+	}
+}
+
+#ifdef DEBUG
+
+#include <stdio.h>
+
+void printout() {
+	printf("%d,", __);
+	printf("%d,", variables);
+	printf("%d,", a);
+	printf("%d,", b);
+	printf("%d,", a_to_b);
+	printf("\n");
+}
+
+int main() {
+	eval();
+	printout();
+}
+
+#endif
+
+==================================================
+bin/compile tests/vars.vera --vars
+--------------------------------------------------
+#define MIN(x, y) (((x) < (y)) ? (x) : (y))
+
+static int __ = 0;
+static int variables = 0;
+static int a = 5;
+static int b = 0;
+static int a_to_b = 1;
+
+int executions = 0;
+
+int step() {
+	if (__) {
+		executions = __;
+		__ -= executions;
+		variables += executions;
+		a += executions;
+		b += executions;
+		return 0;
+	}
+	else if (a && a_to_b) {
+		executions = MIN(a, a_to_b);
+		a -= executions;
+		a_to_b -= executions;
+		b += executions;
+		a_to_b += executions;
+		return 1;
+	}
+	else if (a_to_b) {
+		executions = a_to_b;
+		a_to_b -= executions;
+		return 2;
+	}
+	return -1;
+}
+
+void eval() {
+	int out = 0;
+	while (out != -1) {
+		out = step();
+	}
+}
+
+#ifdef DEBUG
+
+#include <stdio.h>
+
+void printout() {
+	printf("%d,", __);
+	printf("%d,", variables);
+	printf("%d,", a);
+	printf("%d,", b);
+	printf("%d,", a_to_b);
+	printf("\n");
+}
+
+int main() {
+	eval();
+	printout();
+}
+
+#endif
+
+==================================================
+generated/salad
+--------------------------------------------------
+0,0,0,0,0,0,0,1,
+==================================================
+bin/run tests/salad.vera --printout
+--------------------------------------------------
+0,0,0,0,0,0,0,1,
+==================================================
+generated/multiplicity2
+--------------------------------------------------
+1,0,4,
+==================================================
+bin/run tests/multiplicity2.vera --printout
+--------------------------------------------------
+1,0,4,
+==================================================
+generated/vars
+--------------------------------------------------
+0,0,5,0,1,
+==================================================
+bin/run tests/vars.vera --printout
+--------------------------------------------------
+0,0,5,0,1,
+==================================================
+generated/vars_w_vars
+--------------------------------------------------
+0,0,0,5,0,
+==================================================
+bin/run tests/vars.vera --printout --vars
+--------------------------------------------------
+0,0,0,5,0,

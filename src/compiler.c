@@ -24,7 +24,20 @@ static char* add_string(char* str, char* cursor) {
 /* clean up symbol names for use as variable names */
 static char* add_clean_var_str(char* str, char* cursor) {
     while (*str) {
-        if (*str == ' ' || *str == '-' || *str == '>' || *str == ':') {
+        /* '->' into 'to' */
+        if (str[0] == '-' && str[1] == '>') {
+            *cursor = 't';
+            cursor++;
+            *cursor = 'o';
+            str++;
+        }
+        /* '#' into '__', at least until we add dead code pass */
+        else if (*str == '#') {
+            *cursor = '_';
+            cursor++;
+            *cursor = '_';
+        }
+        else if (*str == ' ' || *str == '-' || *str == '>' || *str == ':') {
             *cursor = '_';
         }
         else *cursor = *str;

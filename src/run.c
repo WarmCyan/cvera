@@ -58,11 +58,21 @@ static void print_bag() {
     }
 }
 
+/* this is a printout of the same format as the DEBUG compiled c version */
+static void printout() {
+    int i;
+    for (i = 0; i < sym_table.len; i++) {
+        printf("%d,", acc[i]);
+    }
+    printf("\n");
+}
+
 int main(int argc, char* argv[]) {
     FILE *f;
     int a = 1;
 
     int print_last_only = 0; /* --plast */
+    int printout_format = 0; /* --printout */
     int implicit_constants = 1; /* --no-implicit-constants */
     int max_steps = -1; /* --steps [NUM] */
     int vars_pass = 0; /* --vars */
@@ -80,6 +90,8 @@ int main(int argc, char* argv[]) {
         }
         else if (strcmp(argv[a], "--vars") == 0)
             vars_pass = 1;
+        else if (strcmp(argv[a], "--printout") == 0)
+            printout_format = 1;
         else
             filename_argv_index = a;
         a++;
@@ -109,6 +121,10 @@ int main(int argc, char* argv[]) {
         if (print_last_only) {
             eval(&bag, &rule_table, max_steps);
             print_bag();
+        }
+        else if (printout_format) {
+            eval(&bag, &rule_table, -1);
+            printout();
         }
         else {
             int out = 0;

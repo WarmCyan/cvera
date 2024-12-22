@@ -93,7 +93,7 @@ void get_term_size() {
 
     /* establish game size (-2 to account for borders) */
     game_w = (MAX_W < term_w-2) ? (MAX_W) : (term_w-2);
-    game_h = (MAX_H < term_h-5) ? (MAX_H) : (term_h-5);
+    game_h = (MAX_H < term_h-6) ? (MAX_H) : (term_h-6);
 }
 
 /* https://viewsourcecode.org/snaptoken/kilo/02.enteringRawMode.html */
@@ -104,7 +104,7 @@ int start_term_raw_mode() {
         return -1;
     }
 
-    struct termios new_attrs = *original_term_attrs;
+    struct termios new_attrs = original_term_attrs;
 
     /* input modes - no break, no CR to NL, no parity check, no strip char,
      * no start/stop output control. */

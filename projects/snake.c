@@ -6,7 +6,18 @@
 
 #include "snake_core.c"
 
+#define MAX_W 100
+#define MAX_H 50
+
+#define BORDER_COLOR_BG 44
+#define BORDER_COLOR_FG 30
+
+#define SNAKE_COLOR_BG 42
+
+static char cells[MAX_H][MAX_W];
 static int term_w, term_h;
+static int game_w, game_h;
+static int food_x, food_y;
 
 static struct termios original_term_attrs;
 
@@ -66,6 +77,10 @@ void get_term_size() {
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws);
     term_w = ws.ws_col;
     term_h = ws.ws_row;
+
+    /* establish game size */
+    game_w = (MAX_W < term_w) ? (MAX_W) : (term_w);
+    game_h = (MAX_H < term_h-1) ? (MAX_H) : (term_h-1);
 }
 
 /* https://codereview.stackexchange.com/questions/292621/get-terminal-size-enable-and-disable-terminal-raw-mode-without-ncurses */
@@ -85,7 +100,7 @@ int start_term_raw_mode() {
     /* local modes - echoing off, canonical off, no extended functions, 
      * no signal chars (^Z, ^C) NOTE: acschually no, keep ^C */
     /* new_attrs.c_lflag &= ~(0u | ISIG | IEXTEN | ECHO | ICANON); */
-    new_attrs.c_lflag &= ~(0u | IEXTEN | ECHO | ICANON);
+    new_attrs.c_lflag &= ~(0u | ECHO | ICANON);
 
     /* control modes - set 8 bit chars. */
     new_attrs.c_cflag |= (0u | CS8);
@@ -110,22 +125,65 @@ int stop_term_raw_mode() {
         : 0;
 }
 
+void move_cursor(int x, int y) {
+    printf("\033[%d;%dH", y, x);
+    /* printf("%d;%dH", y, x); */
+}
+
+void clear_screen() {
+    move_cursor(0, 0);
+    printf("\033[0J");
+}
+
+void draw_boundaries() {
+    move_cursor(0, 0);
+
+    printf("\033[%d;%dm", BORDER_COLOR_FG, BORDER_COLOR_BG); 
+    printf(" Vera snek");
+    for (int i = 10; i < game_w; i++) {
+        printf(" ");
+    }
+
+    for (int i = 1; i < game_h; i++) {
+        move_cursor(0, i);
+        printf(" ");
+        move_cursor(game_w, i);
+        printf(" ");
+    }
+
+    move_cursor(0, game_h);
+    for (int i = 0; i < game_w; i++) {
+        printf(" ");
+    }
+    printf("\033[0m");
+    return;
+}
+
+void draw_snake_head() {
+    move_cursor(snek_x, snek_y);
+    printf("\033[%dm \033[0m", SNAKE_COLOR_BG);
+}
+
+void erase_snake_tail() {
+    move_cursor(snek_tail_x, snek_tail_y);
+    printf("\033[0m ");
+}
+
 int main() {
+    clear_screen();
+
+    cells[snek_y][snek_x] = 1;
+
+    
     while (!_o_DED) {
         step();
-        if (_o_find_term_size) {
-            get_term_size();
-            printf("%d:%d\n", term_w, term_h);
-        }
-        if (_o_prepare_term_for_input) {
-            int out = start_term_raw_mode();
-            if (out == 0)
-                printf("Yay!\n");
-            else
-                printf("Boo :(\n");
-        }
+        if (_o_find_term_size) get_term_size();
+        if (_o_prepare_term_for_input) start_term_raw_mode();
+        if (_o_render_boundaries) draw_boundaries();
+        if (_o_render_snek) draw_snake_head();
         break;
     }
-    printout();
+    /* printout(); */
+    move_cursor(game_w, game_h);
     stop_term_raw_mode();
 }

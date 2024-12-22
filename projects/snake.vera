@@ -1,4 +1,4 @@
-||snek_right, snek_x:5, snek_y:5, snek_bigness, setup
+||snek_right, snek_x:5, snek_y:5, snek_bigness, setup, snek_tail_x:5, snek_tail_y:5
 
 |setup|
     <find_term_size,
@@ -7,6 +7,9 @@
     <generate_food,
     <render_boundaries,
     <render_snek
+
+|<find_term_size, <prepare_frame_timer, <prepare_term_for_input, <generate_food, <render_boundaries, <render_snek| >frame_rendered, >begin
+|<render_snek| >frame_rendered
 
 |>frame_rendered, >begin| >next_frame
 

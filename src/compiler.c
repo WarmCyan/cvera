@@ -49,7 +49,7 @@ static char* add_clean_var_str(char* str, char* cursor) {
             cursor++;
             *cursor = '_';
         }
-        else if (*str == ' ' || *str == '-' || *str == '>' || *str == ':' || *str == '\n' || *str == '.' || *str == '\'') {
+        else if (*str == ' ' || *str == '-' || *str == '>' || *str == ':' || *str == '\n' || *str == '.' || *str == '\'' || *str == '+') {
             *cursor = '_';
         }
         else *cursor = *str;

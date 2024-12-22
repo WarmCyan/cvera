@@ -6,11 +6,12 @@ help: ## display all the make commands and their docstring
 
 .PHONY: clean
 clean: ## remove everything in the bin folder, start fresh!
-	rm -rf bin
-	rm -rf tests/splits
-	rm -rf tests/runs
-	rm -rf tests/outs
-	rm -rf generated
+	-rm -rf bin
+	-rm -rf tests/splits
+	-rm -rf tests/runs
+	-rm -rf tests/outs
+	-rm -rf generated
+	-rm -rf projects/snake_core.c
 
 # https://justine.lol/cosmopolitan/
 cosmocc: ## grab and set up the cosmopolitan toolchain (use make [...] CC=cc if you don't want to use)
@@ -84,6 +85,15 @@ test: bin/compile ## run a single example test to see parser output
 .PHONY: tests
 tests: build tests/splits/parser tests/splits/interpreter tests/splits/variables tests/splits/compiler generated/salad generated/multiplicity2 generated/vars generated/vars_w_vars ## run and report on all tests
 	@tests/run_tests -v
+
+
+
+projects/snake_core.c: bin/compile projects/snake.vera
+	exec bin/compile projects/snake.vera > projects/snake_core.c
+
+bin/snake: projects/snake_core.c projects/snake.c
+	${CC} projects/snake.c -o bin/snake
+
 
 # .PHONY: tests-verbose
 # tests-verbose: bin/tester tests/splits/parser ## run and report on all tests

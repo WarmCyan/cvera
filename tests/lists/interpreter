@@ -64,4 +64,4 @@ y
 bin/run tests/multiplicity2.vera --plast --steps 2
 --------------------------------------------------
 a
-c:4
+c:8

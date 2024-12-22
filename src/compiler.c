@@ -164,7 +164,13 @@ void compile_to_c(RuleTable* rules, BagOfFacts* bag, char* src_out) {
             if (rules->table[i * rules->syms->max_len * 2 + j + rules->syms->max_len]) {
                 cursor = add_string("\t\t", cursor);
                 cursor = add_clean_var_str(rules->syms->table[j], cursor);
-                cursor = add_string(" += executions;\n", cursor);
+                cursor = add_string(" += executions", cursor);
+                /* handle multiplicity for a symbol on RHS */
+                if (rules->table[i * rules->syms->max_len * 2 + j + rules->syms->max_len] > 1) {
+                    cursor = add_string(" * ", cursor);
+                    cursor = add_num_to_str(rules->table[i * rules->syms->max_len * 2 + j + rules->syms->max_len], cursor);
+                }
+                cursor = add_string(";\n", cursor);
             }
         }
 

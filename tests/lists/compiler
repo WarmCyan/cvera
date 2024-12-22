@@ -86,7 +86,7 @@ int step() {
 		executions = MIN(a, b);
 		a -= executions;
 		b -= executions;
-		c += executions;
+		c += executions * 2;
 		return 0;
 	}
 	return -1;
@@ -245,11 +245,11 @@ bin/run tests/salad.vera --printout
 ==================================================
 generated/multiplicity2
 --------------------------------------------------
-1,0,4,
+1,0,8,
 ==================================================
 bin/run tests/multiplicity2.vera --printout
 --------------------------------------------------
-1,0,4,
+1,0,8,
 ==================================================
 generated/vars
 --------------------------------------------------

@@ -2,6 +2,7 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 #include <termios.h>
+#include <stdlib.h>
 #include <time.h>
 
 #include "snake_core.c"
@@ -14,6 +15,8 @@
 
 #define SNAKE_COLOR_BG 42
 
+#define FOOD_COLOR_FG 33
+
 static char cells[MAX_H][MAX_W];
 static int term_w, term_h;
 static int game_w, game_h;
@@ -22,55 +25,6 @@ static int food_x, food_y;
 static struct termios original_term_attrs;
 
 
-void printout() {
-	printf("%d,", snek_right);
-	printf("%d,", snek_x);
-	printf("%d,", snek_y);
-	printf("%d,", snek_bigness);
-	printf("%d,", setup);
-	printf("%d,", _o_find_term_size);
-	printf("%d,", _o_prepare_frame_timer);
-	printf("%d,", _o_prepare_term_for_input);
-	printf("%d,", _o_generate_food);
-	printf("%d,", _o_render_boundaries);
-	printf("%d,", _o_render_snek);
-	printf("%d,", _i_frame_rendered);
-	printf("%d,", _i_begin);
-	printf("%d,", _i_next_frame);
-	printf("%d,", move_snek);
-	printf("%d,", _o_check_food);
-	printf("%d,", _o_check_ohnoes_ate_self);
-	printf("%d,", _i_food_get_happy_snek);
-	printf("%d,", embiggen_snek);
-	printf("%d,", _i_no_food_get_sad_snek);
-	printf("%d,", _o_clear_last_tail);
-	printf("%d,", _i_no_eat_self_good_snek);
-	printf("%d,", _i_OHNOES_ate_self_bad_snek);
-	printf("%d,", ded_snek);
-	printf("%d,", _o_DED);
-	printf("%d,", input_processing_loop);
-	printf("%d,", _i_input_received);
-	printf("%d,", reorient_snek);
-	printf("%d,", _);
-	printf("%d,", ORIENTATION_LOGIC);
-	printf("%d,", no_change_if_dumb_snek);
-	printf("%d,", snek_left);
-	printf("%d,", _i_input_left);
-	printf("%d,", _i_input_right);
-	printf("%d,", snek_up);
-	printf("%d,", _i_input_up);
-	printf("%d,", _i_input_down);
-	printf("%d,", snek_down);
-	printf("%d,", yes_change_if_big_brain_snek);
-	printf("%d,", MOVEMENT_LOGIC);
-	printf("%d,", _1_movements);
-	printf("%d,", snek_moved);
-	printf("%d,", minus_1_movements);
-	printf("%d,", minus_snek_x);
-	printf("%d,", minus_snek_y);
-	printf("\n");
-}
-
 /* https://stackoverflow.com/questions/1022957/getting-terminal-width-in-c */
 void get_term_size() {
     struct winsize ws;
@@ -78,9 +32,9 @@ void get_term_size() {
     term_w = ws.ws_col;
     term_h = ws.ws_row;
 
-    /* establish game size */
-    game_w = (MAX_W < term_w) ? (MAX_W) : (term_w);
-    game_h = (MAX_H < term_h-1) ? (MAX_H) : (term_h-1);
+    /* establish game size (-2 to account for borders) */
+    game_w = (MAX_W < term_w-2) ? (MAX_W) : (term_w-2);
+    game_h = (MAX_H < term_h-3) ? (MAX_H) : (term_h-3);
 }
 
 /* https://codereview.stackexchange.com/questions/292621/get-terminal-size-enable-and-disable-terminal-raw-mode-without-ncurses */
@@ -126,7 +80,7 @@ int stop_term_raw_mode() {
 }
 
 void move_cursor(int x, int y) {
-    printf("\033[%d;%dH", y, x);
+    printf("\033[%d;%dH", y+1, x+1);
     /* printf("%d;%dH", y, x); */
 }
 
@@ -140,19 +94,19 @@ void draw_boundaries() {
 
     printf("\033[%d;%dm", BORDER_COLOR_FG, BORDER_COLOR_BG); 
     printf(" Vera snek");
-    for (int i = 10; i < game_w; i++) {
+    for (int i = 10; i <= game_w+2; i++) {
         printf(" ");
     }
 
-    for (int i = 1; i < game_h; i++) {
+    for (int i = 1; i < game_h+2; i++) {
         move_cursor(0, i);
         printf(" ");
-        move_cursor(game_w, i);
+        move_cursor(game_w+2, i);
         printf(" ");
     }
 
-    move_cursor(0, game_h);
-    for (int i = 0; i < game_w; i++) {
+    move_cursor(0, game_h+2);
+    for (int i = 0; i <= game_w+2; i++) {
         printf(" ");
     }
     printf("\033[0m");
@@ -160,30 +114,69 @@ void draw_boundaries() {
 }
 
 void draw_snake_head() {
-    move_cursor(snek_x, snek_y);
+    /* cells[snek_y][snek_x] = 0; */
+    move_cursor(snek_x + 1, snek_y + 1);
     printf("\033[%dm \033[0m", SNAKE_COLOR_BG);
 }
 
 void erase_snake_tail() {
-    move_cursor(snek_tail_x, snek_tail_y);
+    move_cursor(snek_tail_x + 1, snek_tail_y + 1);
+
+    if (cells[snek_tail_y][snek_tail_x] == 1) snek_tail_x++;
+    else if (cells[snek_tail_y][snek_tail_x] == 2) snek_tail_y++;
+    else if (cells[snek_tail_y][snek_tail_x] == 3) snek_tail_x--;
+    else if (cells[snek_tail_y][snek_tail_x] == 4) snek_tail_y--;
+    
     printf("\033[0m ");
 }
 
+void generate_food() {
+    int valid = 0;
+    while (!valid) {
+        food_x = rand() % game_w;
+        food_y = rand() % game_h;
+        valid = !cells[food_y][food_x];
+    }
+    move_cursor(food_x + 1, food_y + 1);
+    printf("\033[%dm#\033[0m", FOOD_COLOR_FG);
+}
+
+void check_food() {
+    if (snek_x == food_x && snek_y == food_y) _i_food_get_happy_snek = 1;
+    else _i_no_food_get_sad_snek = 1;
+}
+
+void check_ohnoes_ate_self() {
+    if (cells[snek_y][snek_x]) _i_OHNOES_ate_self_bad_snek = 1;
+    else _i_no_eat_self_good_snek = 1;
+}
+
 int main() {
-    clear_screen();
-
-    cells[snek_y][snek_x] = 1;
-
-    
+    int steps = 0;
+    srand((unsigned)clock());
     while (!_o_DED) {
         step();
+        steps++;
+        if (_o_clear_screen) clear_screen();
         if (_o_find_term_size) get_term_size();
         if (_o_prepare_term_for_input) start_term_raw_mode();
         if (_o_render_boundaries) draw_boundaries();
         if (_o_render_snek) draw_snake_head();
+        if (_o_generate_food) generate_food();
+        if (_o_check_food) check_food();
+        if (_o_check_ohnoes_ate_self) check_ohnoes_ate_self();
+
+        /* the cells need to record which direction to go next so we can track
+         * where to move tail, so we'll just listen in for these */
+        if (move_snek && snek_right) cells[snek_y][snek_x] = 1;
+        if (move_snek && snek_down) cells[snek_y][snek_x] = 2;
+        if (move_snek && snek_left) cells[snek_y][snek_x] = 3;
+        if (move_snek && snek_up) cells[snek_y][snek_x] = 4;
+
         break;
+        if (steps > 100) { break; }
     }
     /* printout(); */
-    move_cursor(game_w, game_h);
+    move_cursor(game_w+2, game_h+2);
     stop_term_raw_mode();
 }

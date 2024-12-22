@@ -11,6 +11,7 @@ TODO: compile to bash
 TODO: dead code pass
 STRT: variables pass
 TODO: repl
+BUG: trailing comma causes blank symbol
 
 WAIT: step flag
 WAIT: output flag

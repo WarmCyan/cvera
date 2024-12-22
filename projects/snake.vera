@@ -9,8 +9,8 @@
     <render_boundaries,
     <render_snek
 
-|<find_term_size, <prepare_frame_timer, <prepare_term_for_input, <generate_food, <render_boundaries, <render_snek| >frame_rendered, running
-|<render_snek, running| >frame_rendered
+|<clear_screen, <find_term_size, <prepare_frame_timer, <prepare_term_for_input, <generate_food, <render_boundaries, <render_snek| frame_rendered, running
+|<render_snek, running| frame_rendered
 
 |>next_frame|
     move_snek
@@ -23,7 +23,7 @@
 |<check_ohnoes_ate_self, >OHNOES_ate_self_bad_snek| ded_snek
 |ded_snek| <DED
 
-|>frame_rendered| input_processing_loop
+|frame_rendered| input_processing_loop
 |input_processing_loop, >next_frame| >next_frame
 |input_processing_loop, >input_received| reorient_snek, input_processing_loop
 

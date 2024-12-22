@@ -24,6 +24,7 @@ static int food_x, food_y;
 static clock_t last_frame;
 
 static int steps = 0;
+static int last_rule = -1;
 
 static struct termios original_term_attrs;
 
@@ -209,8 +210,10 @@ void check_ohnoes_ate_self() {
 /* https://stackoverflow.com/questions/17167949/how-to-use-timer-in-c */
 int is_time_for_next_frame() {
     clock_t diff = clock() - last_frame; 
-    int msec = diff * 1000 / CLOCKS_PER_SEC;
+    int msec = (diff * 1000*1000) / CLOCKS_PER_SEC;
+    /* printf("%d,",msec); */
     if (msec > MSEC_PER_FRAME) {
+        /* printf("NEW"); */
         _i_next_frame = 1;
         return 1;
     }
@@ -265,14 +268,39 @@ void debug_lines() {
     move_cursor(0, game_h + 3);
     printf("\033[0K");
     printf("%d ", steps);
+    printf("(%d) ", last_rule);
     printout();
 }
 
-int main() {
-    setbuf(stdout, NULL);
+int convert_number(char*s) {
+    int value = 0;
+    while (*s && *s >= '0' && *s <= '9') {
+        value *= 10;
+        value += *s - '0';
+        s++;
+    }
+    return value;
+}
+
+int main(int argc, char* argv[]) {
     srand((unsigned)clock());
+
+    int a = 1;
+    int max_steps = -1; /* --steps [NUM] */
+    /* cli arg parsing */
+    while (a < argc) {
+        if (strcmp(argv[a], "--steps") == 0) {
+            a++;
+            max_steps = convert_number(argv[a]);
+        }
+        a++;
+    }
+
+    
+    setbuf(stdout, NULL);
     while (!_o_DED) {
-        step();
+        last_rule = step();
+        debug_lines();
         steps++;
         if (_o_clear_screen) clear_screen();
         if (_o_find_term_size) get_term_size();
@@ -295,11 +323,10 @@ int main() {
 
         if (input_processing_loop) poll_input();
         debug_lines();
-
         /* break; */
-        /* if (steps > 100) { break; } */
+        if (max_steps != -1 && steps >= max_steps) { break; }
     }
     /* printout(); */
-    move_cursor(game_w+2, game_h+2);
+    move_cursor(game_w+2, game_h+5);
     stop_term_raw_mode();
 }

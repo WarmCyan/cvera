@@ -12,8 +12,6 @@
 |<clear_screen, <find_term_size, <prepare_frame_timer, <prepare_term_for_input, <generate_food, <render_boundaries, <render_snek| frame_rendered, running
 |<render_snek, running| frame_rendered
 
-|>next_frame|
-    move_snek
 
 |<check_food, >food_get_happy_snek| embiggen_snek, <generate_food
 |<check_food, >no_food_get_sad_snek| <clear_last_tail
@@ -63,3 +61,6 @@
 |snek_y, -snek_y| snek_moved
 
 |snek_moved| <render_snek, <check_food, <check_ohnoes_ate_self
+
+|>next_frame|
+    move_snek

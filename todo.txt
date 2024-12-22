@@ -12,6 +12,7 @@ TODO: dead code pass
 STRT: variables pass
 TODO: repl
 BUG: trailing comma causes blank symbol
+TODO: compiled output DEBUG vs RUNNABLE flag
 
 WAIT: step flag
 WAIT: output flag

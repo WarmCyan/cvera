@@ -353,7 +353,7 @@ int main(int argc, char* argv[]) {
         if (move_snek && snek_up) cells[snek_y][snek_x] = 4;
         
         /* weird edge case I think because vera nums can't go negative */
-        if (snek_y == 0 && minus_snek_y) {
+        if ((snek_y == 0 && minus_snek_y) || (snek_x == 0 && minus_snek_x)) {
             _i_where_snek_go = 1;
             _o_check_snek_run_away = 1;
         }

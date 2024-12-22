@@ -47,6 +47,10 @@ void compile_to_c(RuleTable* rules, BagOfFacts* bag, char* src_out) {
     /* add the MIN define */
     cursor = add_string("#define MIN(x, y) (((x) < (y)) ? (x) : (y))\n\n", cursor);
 
+
+
+    
+
     /* output all the static int symbols */
     int i; /* symbol index */
     for (i = 0; i < rules->syms->len; i++) {
@@ -59,6 +63,12 @@ void compile_to_c(RuleTable* rules, BagOfFacts* bag, char* src_out) {
 
     /* add the executions int */
     cursor = add_string("\nint executions = 0;\n\n", cursor);
+
+
+
+
+
+    
 
     /* add the step function */
     cursor = add_string("int step() {\n", cursor);
@@ -92,7 +102,7 @@ void compile_to_c(RuleTable* rules, BagOfFacts* bag, char* src_out) {
         cursor = add_clean_var_str(rules->syms->table[lhs_symbol_indices[0]], cursor);
         for (k = 1; k < distinct_lhs_symbol_count; k++) {
             cursor = add_string(" && ", cursor);
-            cursor = add_clean_var_str(rules->syms->table[k], cursor);
+            cursor = add_clean_var_str(rules->syms->table[lhs_symbol_indices[k]], cursor);
         }
         cursor = add_string(") {\n", cursor);
 
@@ -142,6 +152,32 @@ void compile_to_c(RuleTable* rules, BagOfFacts* bag, char* src_out) {
         num_rules_added++;
     }
     cursor = add_string("\treturn -1;\n}\n", cursor);
+
+
+    
     /* add the eval function */
+    cursor = add_string("\nvoid eval() {\n\tint out = 0;\n\twhile (out != -1) {\n\t\tout = step();\n\t}\n}", cursor);
         /* run step until return is not -1 */
+
+    
+
+    
+    /* add debug option */
+    cursor = add_string("\n\n#ifdef DEBUG\n", cursor);
+    
+    cursor = add_string("\n#include <stdio.h>\n", cursor);
+    
+    /* add printout func */
+    cursor = add_string("\nvoid printout() {\n", cursor);
+    for (i = 0; i < rules->syms->len; i++) {
+        cursor = add_string("\tprintf(\"\%d,\", ", cursor);
+        cursor = add_clean_var_str(rules->syms->table[i], cursor);
+        cursor = add_string(");\n", cursor);
+    }
+    cursor = add_string("\tprintf(\"\\n\");\n}\n", cursor);
+
+    /* add main func */
+    cursor = add_string("\nint main() {\n\teval();\n\tprintout();\n}\n", cursor);
+    
+    cursor = add_string("\n#endif\n", cursor);
 }

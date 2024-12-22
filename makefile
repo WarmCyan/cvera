@@ -49,6 +49,13 @@ bin/variables: src/variables.c src/parser.c src/parser.h src/variables_pass.h sr
 bin/compile: src/compile.c src/compiler.h src/compiler.c src/parser.h src/parser.c src/interpreter.h src/interpreter.c
 	@mkdir -p bin
 	${CC} src/compile.c src/parser.c src/interpreter.c src/compiler.c -o bin/compile
+
+generated/salad.c: bin/compile
+	@mkdir -p generated
+	exec bin/compile tests/salad.vera > generated/salad.c
+
+generated/salad: generated/salad.c
+	${CC} generated/salad.c -DDEBUG -o generated/salad
 	
 .PHONY: test
 	# exec bin/tester tests/multiplicity.vera --prules

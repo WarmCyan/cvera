@@ -4,6 +4,7 @@
 #include <termios.h>
 #include <stdlib.h>
 #include <time.h>
+#include <string.h>
 
 #include "snake_core.c"
 

@@ -11,6 +11,7 @@
 
 |<clear_screen, <find_term_size, <prepare_frame_timer, <prepare_term_for_input, <generate_food, <render_boundaries, <render_snek| frame_rendered, running
 |<render_snek, <clear_last_tail, running| frame_rendered, running
+|<render_snek, <generate_food, running| frame_rendered, running
 
 
 |<check_food, >food_get_happy_snek| embiggen_snek, <generate_food
@@ -20,6 +21,9 @@
 |<check_ohnoes_ate_self, >no_eat_self_good_snek|
 |<check_ohnoes_ate_self, >OHNOES_ate_self_bad_snek| ded_snek
 |ded_snek| <DED
+
+|<check_snek_run_away, >snek_still_here|
+|<check_snek_run_away, >where_snek_go| ded_snek
 
 |frame_rendered| input_processing_loop
 |input_processing_loop, >next_frame| >next_frame
@@ -60,7 +64,11 @@
 |move_snek, snek_up| snek_up, -snek_y
 |snek_y, -snek_y| snek_moved
 
-|snek_moved| <render_snek, <check_food, <check_ohnoes_ate_self
+|snek_moved|
+    <render_snek,
+    <check_food,
+    <check_ohnoes_ate_self,
+    <check_snek_run_away
 
 |>next_frame|
     move_snek

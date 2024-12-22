@@ -10,18 +10,19 @@
 #define MAX_W 100
 #define MAX_H 50
 
+#define BORDER_COLOR_BG_GAMEOVER 41
 #define BORDER_COLOR_BG 44
 #define BORDER_COLOR_FG 30
 #define SNAKE_COLOR_BG 42
 #define FOOD_COLOR_FG 33
 
-#define MSEC_PER_FRAME 100
+#define MSEC_PER_FRAME 50
 
 static char cells[MAX_H][MAX_W];
 static int term_w, term_h;
 static int game_w, game_h;
 static int food_x, food_y;
-static clock_t last_frame;
+static int last_frame;
 
 static int steps = 0;
 static int last_rule = -1;
@@ -53,6 +54,9 @@ void printout() {
 	if (_i_no_food_get_sad_snek) printf("_i_no_food_get_sad_snek ");
 	if (_o_clear_last_tail) printf("_o_clear_last_tail ");
 	if (_o_check_ohnoes_ate_self) printf("_o_check_ohnoes_ate_self ");
+	if (_o_check_snek_run_away) printf("_o_check_snek_run_away ");
+	if (_i_snek_still_here) printf("_i_snek_still_here ");
+	if (_i_where_snek_go) printf("_i_where_snek_go ");
 	if (_i_no_eat_self_good_snek) printf("_i_no_eat_self_good_snek ");
 	if (_i_OHNOES_ate_self_bad_snek) printf("_i_OHNOES_ate_self_bad_snek ");
 	if (ded_snek) printf("ded_snek ");
@@ -100,7 +104,7 @@ int start_term_raw_mode() {
         return -1;
     }
 
-    struct termios new_attrs = original_term_attrs;
+    struct termios new_attrs = *original_term_attrs;
 
     /* input modes - no break, no CR to NL, no parity check, no strip char,
      * no start/stop output control. */
@@ -148,7 +152,9 @@ void clear_screen() {
 void draw_boundaries() {
     move_cursor(0, 0);
 
-    printf("\033[%d;%dm", BORDER_COLOR_FG, BORDER_COLOR_BG); 
+    int bg_color = _o_DED ? BORDER_COLOR_BG_GAMEOVER : BORDER_COLOR_BG;
+
+    printf("\033[%d;%dm", BORDER_COLOR_FG, bg_color); 
     printf(" Vera snek");
     for (int i = 10; i <= game_w+2; i++) {
         printf(" ");
@@ -177,11 +183,16 @@ void draw_snake_head() {
 
 void erase_snake_tail() {
     move_cursor(snek_tail_x + 1, snek_tail_y + 1);
-
+    
+    int old_snek_tail_y = snek_tail_y;
+    int old_snek_tail_x = snek_tail_x;
+    
     if (cells[snek_tail_y][snek_tail_x] == 1) snek_tail_x++;
     else if (cells[snek_tail_y][snek_tail_x] == 2) snek_tail_y++;
     else if (cells[snek_tail_y][snek_tail_x] == 3) snek_tail_x--;
     else if (cells[snek_tail_y][snek_tail_x] == 4) snek_tail_y--;
+
+    cells[old_snek_tail_y][old_snek_tail_x] = 0;
     
     printf("\033[0m ");
 }
@@ -207,12 +218,24 @@ void check_ohnoes_ate_self() {
     else _i_no_eat_self_good_snek = 1;
 }
 
+void check_snek_at_boundary() {
+    if (snek_x <= 0 || snek_x > game_w || snek_y <= 0 || snek_y > game_h) 
+        _i_where_snek_go = 1;
+    else _i_snek_still_here = 1;
+}
+
+int time_ms() {
+    struct timespec now;
+    timespec_get(&now, TIME_UTC);
+    return now.tv_sec * 1000 + now.tv_nsec / 1000000;
+}
+
 /* https://stackoverflow.com/questions/17167949/how-to-use-timer-in-c */
 int is_time_for_next_frame() {
-    clock_t diff = clock() - last_frame; 
-    int msec = (diff * 1000*1000) / CLOCKS_PER_SEC;
+    int diff = time_ms() - last_frame; 
+    /* int msec = diff * 1000*1000) / CLOCKS_PER_SEC; */
     /* printf("%d,",msec); */
-    if (msec > MSEC_PER_FRAME) {
+    if (diff > MSEC_PER_FRAME) {
         /* printf("NEW"); */
         _i_next_frame = 1;
         return 1;
@@ -301,6 +324,7 @@ int main(int argc, char* argv[]) {
     }
 
     setbuf(stdout, NULL);
+    /* setbuf(stdin, NULL); */
     printf("\033[?25l");
 
     while (!_o_DED) {
@@ -316,9 +340,10 @@ int main(int argc, char* argv[]) {
         if (_o_generate_food) generate_food();
         if (_o_check_food) check_food();
         if (_o_check_ohnoes_ate_self) check_ohnoes_ate_self();
+        if (_o_check_snek_run_away) check_snek_at_boundary();
         if (_o_clear_last_tail) erase_snake_tail();
 
-        if (frame_rendered) last_frame = clock();
+        if (frame_rendered) last_frame = time_ms();
 
         /* the cells need to record which direction to go next so we can track
          * where to move tail, so we'll just listen in for these */
@@ -333,7 +358,9 @@ int main(int argc, char* argv[]) {
         /* break; */
         if (max_steps != -1 && steps >= max_steps) { break; }
     }
+    draw_boundaries();
     /* printout(); */
-    move_cursor(game_w+2, game_h+5);
+    move_cursor(game_w+2, game_h+4);
     stop_term_raw_mode();
+    printf("\033[?25h");
 }

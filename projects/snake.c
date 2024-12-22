@@ -287,20 +287,26 @@ int main(int argc, char* argv[]) {
 
     int a = 1;
     int max_steps = -1; /* --steps [NUM] */
+    int debug = 0; /* --debug */
     /* cli arg parsing */
     while (a < argc) {
         if (strcmp(argv[a], "--steps") == 0) {
             a++;
             max_steps = convert_number(argv[a]);
         }
+        else if (strcmp(argv[a], "--debug") == 0) {
+            debug = 1;
+        }
         a++;
     }
 
-    
     setbuf(stdout, NULL);
+    printf("\033[?25l");
+
     while (!_o_DED) {
         last_rule = step();
-        debug_lines();
+        if (debug)
+            debug_lines();
         steps++;
         if (_o_clear_screen) clear_screen();
         if (_o_find_term_size) get_term_size();
@@ -322,7 +328,8 @@ int main(int argc, char* argv[]) {
         if (move_snek && snek_up) cells[snek_y][snek_x] = 4;
 
         if (input_processing_loop) poll_input();
-        debug_lines();
+        if (debug)
+            debug_lines();
         /* break; */
         if (max_steps != -1 && steps >= max_steps) { break; }
     }

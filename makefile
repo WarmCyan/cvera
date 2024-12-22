@@ -45,11 +45,16 @@ bin/run: src/run.c src/interpreter.h src/interpreter.c src/parser.c src/parser.h
 bin/variables: src/variables.c src/parser.c src/parser.h src/variables_pass.h src/variables_pass.c
 	@mkdir -p bin
 	${CC} src/variables.c src/parser.c src/variables_pass.c -o bin/variables
+
+bin/compile: src/compile.c src/compiler.h src/compiler.c src/parser.h src/parser.c src/interpreter.h src/interpreter.c
+	@mkdir -p bin
+	${CC} src/compile.c src/parser.c src/interpreter.c src/compiler.c -o bin/compile
 	
 .PHONY: test
-test: bin/run bin/tester ## run a single example test to see parser output
-	exec bin/tester tests/multiplicity.vera --prules
-	cat tests/multiplicity.vera | bin/run --steps 1 --plast
+	# exec bin/tester tests/multiplicity.vera --prules
+	# cat tests/multiplicity.vera | bin/run --steps 1 --plast
+test: bin/compile ## run a single example test to see parser output
+	exec bin/compile tests/salad.vera
 
 .PHONY: tests
 tests: build tests/splits/parser tests/splits/interpreter tests/splits/variables ## run and report on all tests

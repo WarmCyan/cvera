@@ -23,6 +23,18 @@ static char* add_string(char* str, char* cursor) {
 
 /* clean up symbol names for use as variable names */
 static char* add_clean_var_str(char* str, char* cursor) {
+    if (*str && str[0] == '<') {
+        cursor = add_string("_o_", cursor);
+        str++;
+    }
+    else if (*str && str[0] == '>') {
+        cursor = add_string("_i_", cursor);
+        str++;
+    }
+    else if (*str && str[0] == '-') {
+        cursor = add_string("minus_", cursor);
+        str++;
+    }
     while (*str) {
         /* '->' into 'to' */
         if (str[0] == '-' && str[1] == '>') {
@@ -37,7 +49,7 @@ static char* add_clean_var_str(char* str, char* cursor) {
             cursor++;
             *cursor = '_';
         }
-        else if (*str == ' ' || *str == '-' || *str == '>' || *str == ':') {
+        else if (*str == ' ' || *str == '-' || *str == '>' || *str == ':' || *str == '\n' || *str == '.' || *str == '\'') {
             *cursor = '_';
         }
         else *cursor = *str;

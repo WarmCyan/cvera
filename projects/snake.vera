@@ -1,0 +1,65 @@
+||snek_right, snek_x:5, snek_y:5, snek_bigness, setup
+
+|setup|
+    <find_term_size,
+    <prepare_frame_timer,
+    <prepare_term_for_input,
+    <generate_food,
+    <render_boundaries,
+    <render_snek
+
+|>frame_rendered, >begin| >next_frame
+
+|>next_frame|
+    move_snek,
+    <check_food,
+    <check_ohnoes_ate_self
+
+|<check_food, >food_get_happy_snek| embiggen_snek, <generate_food
+|<check_food, >no_food_get_sad_snek| <clear_last_tail
+|embiggen_snek| snek_bigness
+
+|<check_ohnoes_ate_self, >no_eat_self_good_snek|
+|<check_ohnoes_ate_self, >OHNOES_ate_self_bad_snek| ded_snek
+|ded_snek| <DED
+
+|>frame_rendered| input_processing_loop
+|input_processing_loop, >next_frame| >next_frame
+|input_processing_loop, >input_received| reorient_snek, input_processing_loop
+
+
+|_| ORIENTATION LOGIC
+
+|_| no change if dumb snek
+|reorient_snek, snek_left, >input_left| snek_left
+|reorient_snek, snek_left, >input_right| snek_left
+|reorient_snek, snek_right, >input_left| snek_right
+|reorient_snek, snek_right, >input_right| snek_right
+|reorient_snek, snek_up, >input_up| snek_up
+|reorient_snek, snek_up, >input_down| snek_up
+|reorient_snek, snek_down, >input_up| snek_down
+|reorient_snek, snek_down, >input_down| snek_down
+
+|_| yes change if big brain snek
+|reorient_snek, snek_left, >input_up| snek_up
+|reorient_snek, snek_left, >input_down| snek_down
+|reorient_snek, snek_right, >input_up| snek_up
+|reorient_snek, snek_right, >input_down| snek_down
+|reorient_snek, snek_up, >input_left| snek_left
+|reorient_snek, snek_up, >input_right| snek_right
+|reorient_snek, snek_down, >input_left| snek_left
+|reorient_snek, snek_down, >input_right| snek_right
+
+|_| MOVEMENT LOGIC
+
+|_| +1 movements
+|move_snek, snek_right| snek_right, snek_x, snek_moved
+|move_snek, snek_down| snek_down, snek_y, snek_moved
+
+|_| -1 movements
+|move_snek, snek_left| snek_left, -snek_x
+|snek_x, -snek_x| snek_moved
+|move_snek, snek_up| snek_up, -snek_y
+|snek_y, -snek_y| snek_moved
+
+|snek_moved| <render_snek

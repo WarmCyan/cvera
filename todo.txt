@@ -2,13 +2,15 @@ DONE: separate out parsing functions into separate header
 DONE: better test infra
 DONE: allow piping stdin into run interpreter
 DONE: symbol ':' multiplicity syntax (constants)
+DONE: compile to c
 
+STRT: make a snek game!
+TODO: do z-encoding for better c safe var names: https://hackage.haskell.org/package/zenc-0.1.2/docs/Text-Encoding-Z.html#v:zEncodeString
+TODO: cleanup the godawful mess that is the compile_to_c function
+TODO: compile to bash
+TODO: dead code pass
 STRT: variables pass
 TODO: repl
-DONE: compile to c
-TODO: dead code pass
-TODO: make a snek game!
-TODO: cleanup the godawful mess that is the compile_to_c function
 
 WAIT: step flag
 WAIT: output flag

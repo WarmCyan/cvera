@@ -41,6 +41,15 @@ A basic vera to C compiler is available which transpiles input vera code into C.
 The output code can optionally be compiled with the `-DDEBUG` flag to make a
 runnable that prints out the end state accumulator.
 
+I have built snake! A lot of the code is still (somewhat necessarily) done in
+hand coded C, but most of the core control logic is in vera, see
+`projects/snake.vera`. Run it with
+
+```
+make bin/snake
+bin/snake
+```
+
 ## Bin files
 
 Use `make build` to produce these:
@@ -62,6 +71,7 @@ cat tests/vars.vera | bin/variables | bin/run
 * `bin/compile` - a vera to c compiler, turns stdin vera code or passed vera
   source file into a string of C code. Compile the results with `gcc` or
   similar. (run `make generated/salad` for an example)
+* `bin/snake` - The classic game of snake! Input's a bit laggy but it works!
 
 
 ## Passes

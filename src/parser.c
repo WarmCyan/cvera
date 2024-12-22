@@ -102,6 +102,7 @@ char* walk_number(char* s, int* count) {
 static char* walk_symbol(char* s, int* id, SymTable* syms, int* count) {
     s = walk_whitespace(s);
     *id = index_of_symbol(s, syms);
+    *count = 1; /* reset count, otherwise a "||x:5, y" is mistakenly made "||x:5, y:5" */
     if (*id > -1) {
         /* we've seen this symbol before, so just walk to the end of it 
          * (when we see a delimiter or end of fact syntax, or start of a number) */

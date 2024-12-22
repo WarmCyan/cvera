@@ -108,8 +108,10 @@ RUL 7:|test|
 bin/tester tests/multiplicity.vera --psymbols --no-implicit-constants
 --------------------------------------------------
 SYM 0:x:5
-SYM 1:x:2
+SYM 1:y
+SYM 2:x:2
 ==================================================
 bin/tester tests/multiplicity.vera --psymbols
 --------------------------------------------------
 SYM 0:x
+SYM 1:y

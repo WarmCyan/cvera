@@ -5,3 +5,4 @@ tests/splits/*
 bin/*
 generated/*
 projects/snake_core.c
+src/tableops*

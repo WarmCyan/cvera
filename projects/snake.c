@@ -219,7 +219,7 @@ void check_ohnoes_ate_self() {
 }
 
 void check_snek_at_boundary() {
-    if (snek_x <= 0 || snek_x > game_w || snek_y <= 0 || snek_y > game_h) 
+    if (snek_x < 0 || snek_x > game_w || snek_y < 0 || snek_y > game_h) 
         _i_where_snek_go = 1;
     else _i_snek_still_here = 1;
 }
@@ -351,6 +351,12 @@ int main(int argc, char* argv[]) {
         if (move_snek && snek_down) cells[snek_y][snek_x] = 2;
         if (move_snek && snek_left) cells[snek_y][snek_x] = 3;
         if (move_snek && snek_up) cells[snek_y][snek_x] = 4;
+        
+        /* weird edge case I think because vera nums can't go negative */
+        if (snek_y == 0 && minus_snek_y) {
+            _i_where_snek_go = 1;
+            _o_check_snek_run_away = 1;
+        }
 
         if (input_processing_loop) poll_input();
         if (debug)
